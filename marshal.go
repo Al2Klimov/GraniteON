@@ -62,19 +62,19 @@ func marshalAny(o any, w io.Writer) (n int64, err error) {
 	case uint16:
 		buf := [3]byte{scalarUInt16}
 		i := packUInt16BE(oo)
-		copy(i[:], buf[1:])
+		copy(buf[1:], i[:])
 		n, errWr := w.Write(buf[:])
 		return int64(n), errWr
 	case uint32:
 		buf := [5]byte{scalarUInt32}
 		i := packUInt32BE(oo)
-		copy(i[:], buf[1:])
+		copy(buf[1:], i[:])
 		n, errWr := w.Write(buf[:])
 		return int64(n), errWr
 	case uint64:
 		buf := [9]byte{scalarUInt64}
 		i := packUInt64BE(oo)
-		copy(i[:], buf[1:])
+		copy(buf[1:], i[:])
 		n, errWr := w.Write(buf[:])
 		return int64(n), errWr
 	case int:
@@ -90,31 +90,31 @@ func marshalAny(o any, w io.Writer) (n int64, err error) {
 	case int16:
 		buf := [3]byte{scalarInt16}
 		i := packUInt16BE(uint16(oo))
-		copy(i[:], buf[1:])
+		copy(buf[1:], i[:])
 		n, errWr := w.Write(buf[:])
 		return int64(n), errWr
 	case int32:
 		buf := [5]byte{scalarInt32}
 		i := packUInt32BE(uint32(oo))
-		copy(i[:], buf[1:])
+		copy(buf[1:], i[:])
 		n, errWr := w.Write(buf[:])
 		return int64(n), errWr
 	case int64:
 		buf := [9]byte{scalarInt64}
 		i := packUInt64BE(uint64(oo))
-		copy(i[:], buf[1:])
+		copy(buf[1:], i[:])
 		n, errWr := w.Write(buf[:])
 		return int64(n), errWr
 	case float32:
 		buf := [5]byte{scalarFloat32}
 		f := packUInt32BE(math.Float32bits(oo))
-		copy(f[:], buf[1:])
+		copy(buf[1:], f[:])
 		n, errWr := w.Write(buf[:])
 		return int64(n), errWr
 	case float64:
 		buf := [9]byte{scalarFloat64}
 		f := packUInt64BE(math.Float64bits(oo))
-		copy(f[:], buf[1:])
+		copy(buf[1:], f[:])
 		n, errWr := w.Write(buf[:])
 		return int64(n), errWr
 	case string:
@@ -271,17 +271,17 @@ func packLen(typ byte, l int) (buf [9]byte, bufLen uint8) {
 	} else if i <= maxUInt16 {
 		buf[0] = typ | size16
 		ii := packUInt16BE(uint16(i))
-		copy(ii[:], buf[1:])
+		copy(buf[1:], ii[:])
 		bufLen = 3
 	} else if i <= maxUInt32 {
 		buf[0] = typ | size32
 		ii := packUInt32BE(uint32(i))
-		copy(ii[:], buf[1:])
+		copy(buf[1:], ii[:])
 		bufLen = 5
 	} else {
 		buf[0] = typ | size64
 		ii := packUInt64BE(i)
-		copy(ii[:], buf[1:])
+		copy(buf[1:], ii[:])
 		bufLen = 9
 	}
 
