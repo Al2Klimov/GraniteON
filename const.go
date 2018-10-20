@@ -39,3 +39,18 @@ const scalarInt64 = typeInt | size64
 
 const scalarFloat32 = typeFloat | size32
 const scalarFloat64 = typeFloat | size64
+
+const scalarString8 = typeString | size8
+const scalarString16 = typeString | size16
+const scalarString32 = typeString | size32
+const scalarString64 = typeString | size64
+
+const array8 = typeArray | size8
+const array16 = typeArray | size16
+const array32 = typeArray | size32
+const array64 = typeArray | size64
+
+const dict8 = typeDict | size8
+const dict16 = typeDict | size16
+const dict32 = typeDict | size32
+const dict64 = typeDict | size64
