@@ -231,21 +231,21 @@ func packLen(typ byte, l int) (buf [9]byte, bufLen uint8) {
 	i := uint64(l)
 
 	if i <= maxUInt8 {
-		buf[0] = typ | size8
+		buf[0] = typ | effSize8
 		buf[1] = byte(i)
 		bufLen = 2
 	} else if i <= maxUInt16 {
-		buf[0] = typ | size16
+		buf[0] = typ | effSize16
 		ii := packUInt16BE(uint16(i))
 		copy(buf[1:], ii[:])
 		bufLen = 3
 	} else if i <= maxUInt32 {
-		buf[0] = typ | size32
+		buf[0] = typ | effSize32
 		ii := packUInt32BE(uint32(i))
 		copy(buf[1:], ii[:])
 		bufLen = 5
 	} else {
-		buf[0] = typ | size64
+		buf[0] = typ | effSize64
 		ii := packUInt64BE(i)
 		copy(buf[1:], ii[:])
 		bufLen = 9
