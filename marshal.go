@@ -6,32 +6,8 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"reflect"
 	"sort"
 )
-
-type NotMarshalable struct {
-	Object any
-}
-
-func (e NotMarshalable) Error() string {
-	var typeName string
-	if typ := reflect.TypeOf(e.Object); typ == nil {
-		typeName = "nil"
-	} else {
-		typeName = typ.Name()
-	}
-
-	return fmt.Sprintf("non-marshalable value: %s(%#v)", typeName, e.Object)
-}
-
-type Marshaler struct {
-	Object any
-}
-
-func (m Marshaler) WriteTo(w io.Writer) (n int64, err error) {
-	return marshalAny(m.Object, w)
-}
 
 func marshalAny(o any, w io.Writer) (n int64, err error) {
 	switch oo := o.(type) {

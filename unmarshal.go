@@ -2,28 +2,10 @@ package GraniteON
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"math"
 	"strconv"
 )
-
-type NotUnmarshalable struct {
-	Type byte
-}
-
-func (e NotUnmarshalable) Error() string {
-	return fmt.Sprintf("non-unmarshalable type: byte(%d)", e.Type)
-}
-
-type Unmarshaler struct {
-	Object any
-}
-
-func (u *Unmarshaler) ReadFrom(r io.Reader) (n int64, err error) {
-	u.Object, n, err = unmarshalAny(r)
-	return
-}
 
 func unmarshalAny(r io.Reader) (o any, n int64, err error) {
 	var buf [1]byte
@@ -401,7 +383,7 @@ func unpackDict(r io.Reader, l int) (d any, n int64, err error) {
 			kkk = kk
 		default:
 			buf := &bytes.Buffer{}
-			Marshaler{k}.WriteTo(buf)
+			GraniteON{k}.WriteTo(buf)
 			kkk = buf.String()
 		}
 

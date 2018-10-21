@@ -131,11 +131,11 @@ func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmar
 
 	{
 		buf := &bytes.Buffer{}
-		n, err := Marshaler{object}.WriteTo(buf)
+		n, err := GraniteON{object}.WriteTo(buf)
 
 		AssertCallResult(
 			t,
-			"Marshaler{%#v}.WriteTo(&bytes.Buffer{})",
+			"GraniteON{%#v}.WriteTo(&bytes.Buffer{})",
 			[]any{object},
 			[]any{int64(len(marshaled)), nil},
 			[]any{n, err},
@@ -143,7 +143,7 @@ func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmar
 
 		AssertCallResult(
 			t,
-			"Marshaler{%#v}.WriteTo(&bytes.Buffer{}); buf.Bytes()",
+			"GraniteON{%#v}.WriteTo(&bytes.Buffer{}); buf.Bytes()",
 			[]any{object},
 			[]any{marshaled},
 			[]any{buf.Bytes()},
@@ -153,12 +153,12 @@ func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmar
 	buf := &bytes.Buffer{}
 	buf.Write(marshaled)
 
-	um := &Unmarshaler{}
+	um := &GraniteON{}
 	n, err := um.ReadFrom(buf)
 
 	AssertCallResult(
 		t,
-		"(&Unmarshaler{}).ReadFrom(&bytes.Buffer{%#v})",
+		"(&GraniteON{}).ReadFrom(&bytes.Buffer{%#v})",
 		[]any{marshaled},
 		[]any{int64(len(marshaled)), nil},
 		[]any{n, err},
@@ -166,7 +166,7 @@ func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmar
 
 	AssertCallResult(
 		t,
-		"um := &Unmarshaler{}; um.ReadFrom(&bytes.Buffer{%#v}); um.Object",
+		"um := &GraniteON{}; um.ReadFrom(&bytes.Buffer{%#v}); um.Object",
 		[]any{marshaled},
 		[]any{unmarshaled},
 		[]any{um.Object},
