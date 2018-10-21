@@ -4,6 +4,7 @@ import (
 	"bytes"
 	. "github.com/Al2Klimov/go-test-utils"
 	"math"
+	"math/rand"
 	"testing"
 )
 
@@ -124,6 +125,85 @@ func TestFloat(t *testing.T) {
 	assertMarshalAndUnmarshal(t, float64(1), []byte{0x43, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, float64(1))
 	assertMarshalAndUnmarshal(t, float64(math.MaxFloat64/2), []byte{0x43, 0x7f, 0xdf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, float64(math.MaxFloat64/2))
 	assertMarshalAndUnmarshal(t, float64(math.MaxFloat64), []byte{0x43, 0x7f, 0xef, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, float64(math.MaxFloat64))
+}
+
+func TestString(t *testing.T) {
+	assertMarshalAndUnmarshal(t, "", []byte{0x50, 0x00}, "")
+	assertMarshalAndUnmarshal(t, []byte{}, []byte{0x50, 0x00}, "")
+	assertMarshalAndUnmarshal(t, "x", []byte{0x50, 0x01, 'x'}, "x")
+	assertMarshalAndUnmarshal(t, []byte{'x'}, []byte{0x50, 0x01, 'x'}, "x")
+
+	{
+		buf := [256]byte{0x50, 0xfe}
+		rand.Read(buf[2:])
+
+		s := string(buf[2:])
+		assertMarshalAndUnmarshal(t, s, buf[:], s)
+		assertMarshalAndUnmarshal(t, buf[2:], buf[:], s)
+	}
+
+	{
+		buf := [257]byte{0x50, 0xff}
+		rand.Read(buf[2:])
+
+		s := string(buf[2:])
+		assertMarshalAndUnmarshal(t, s, buf[:], s)
+		assertMarshalAndUnmarshal(t, buf[2:], buf[:], s)
+	}
+
+	{
+		buf := [259]byte{0x51, 0x01, 0x00}
+		rand.Read(buf[3:])
+
+		s := string(buf[3:])
+		assertMarshalAndUnmarshal(t, s, buf[:], s)
+		assertMarshalAndUnmarshal(t, buf[3:], buf[:], s)
+	}
+
+	{
+		buf := [260]byte{0x51, 0x01, 0x01}
+		rand.Read(buf[3:])
+
+		s := string(buf[3:])
+		assertMarshalAndUnmarshal(t, s, buf[:], s)
+		assertMarshalAndUnmarshal(t, buf[3:], buf[:], s)
+	}
+
+	{
+		buf := [65537]byte{0x51, 0xff, 0xfe}
+		rand.Read(buf[3:])
+
+		s := string(buf[3:])
+		assertMarshalAndUnmarshal(t, s, buf[:], s)
+		assertMarshalAndUnmarshal(t, buf[3:], buf[:], s)
+	}
+
+	{
+		buf := [65538]byte{0x51, 0xff, 0xff}
+		rand.Read(buf[3:])
+
+		s := string(buf[3:])
+		assertMarshalAndUnmarshal(t, s, buf[:], s)
+		assertMarshalAndUnmarshal(t, buf[3:], buf[:], s)
+	}
+
+	{
+		buf := [65541]byte{0x52, 0x00, 0x01, 0x00, 0x00}
+		rand.Read(buf[5:])
+
+		s := string(buf[5:])
+		assertMarshalAndUnmarshal(t, s, buf[:], s)
+		assertMarshalAndUnmarshal(t, buf[5:], buf[:], s)
+	}
+
+	{
+		buf := [65542]byte{0x52, 0x00, 0x01, 0x00, 0x01}
+		rand.Read(buf[5:])
+
+		s := string(buf[5:])
+		assertMarshalAndUnmarshal(t, s, buf[:], s)
+		assertMarshalAndUnmarshal(t, buf[5:], buf[:], s)
+	}
 }
 
 func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmarshaled any) {
