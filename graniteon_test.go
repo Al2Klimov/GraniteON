@@ -44,11 +44,31 @@ func (g grumpycat) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]any{"motd": g.motd})
 }
 
-type fullDisk struct {
+type brokenJson struct {
+	brokenJson []byte
 }
 
-func (fullDisk) Write(p []byte) (n int, err error) {
-	return 0, bufio.ErrBufferFull
+func (b brokenJson) MarshalJSON() ([]byte, error) {
+	return b.brokenJson, nil
+}
+
+type fullDisk struct {
+	cap int
+}
+
+func (d *fullDisk) Write(p []byte) (n int, err error) {
+	if len(p) > d.cap {
+		n = d.cap
+		err = bufio.ErrBufferFull
+
+		d.cap = 0
+
+		return
+	}
+
+	d.cap -= len(p)
+
+	return len(p), nil
 }
 
 func TestNil(t *testing.T) {
@@ -95,7 +115,7 @@ func TestUInt(t *testing.T) {
 }
 
 func TestInt(t *testing.T) {
-	if maxInt <= maxInt32 {
+	if maxUInt <= maxUInt32 {
 		assertMarshalAndUnmarshal(t, int(-2147483648), []byte{0x32, 0x80, 0x00, 0x00, 0x00}, int32(-2147483648))
 		assertMarshalAndUnmarshal(t, int(-2147483647), []byte{0x32, 0x80, 0x00, 0x00, 0x01}, int32(-2147483647))
 		assertMarshalAndUnmarshal(t, int(-2), []byte{0x32, 0xff, 0xff, 0xff, 0xfe}, int32(-2))
@@ -335,6 +355,8 @@ func TestSpecial(t *testing.T) {
 	assertMarshalAndUnmarshal(t, cat{"has mouse"}, []byte{0x50, 0x09, 'h', 'a', 's', ' ', 'm', 'o', 'u', 's', 'e'}, "has mouse")
 	assertMarshalAndUnmarshal(t, lolcat{true}, []byte{0x50, 0x12, 'I', ' ', 'h', 'a', 's', ' ', 'c', 'h', 'e', 'e', 'z', 'b', 'u', 'r', 'g', 'e', 'r', '!'}, "I has cheezburger!")
 	assertMarshalAndUnmarshal(t, grumpycat{`-.-"`}, []byte{0x70, 0x01, 0x50, 0x04, 'm', 'o', 't', 'd', 0x50, 0x04, '-', '.', '-', '"'}, map[string]any{"motd": `-.-"`})
+
+	assertUnmarshal(t, []byte{0x70, 0x01, 0x00, 0x00}, map[string]any{string([]byte{0x00}): nil})
 }
 
 func TestError(t *testing.T) {
@@ -347,32 +369,83 @@ func TestError(t *testing.T) {
 			[]any{},
 			[]any{int64(0), NotMarshalable{struct{}{}}},
 			[]any{n, err},
+			true,
 		)
-	}
-
-	{
-		n, err := GraniteON{nil}.WriteTo(fullDisk{})
 
 		AssertCallResult(
 			t,
-			"GraniteON{nil}.WriteTo(fullDisk{})",
+			"NotMarshalable{struct{}{}}.Error()",
 			[]any{},
-			[]any{int64(0), bufio.ErrBufferFull},
-			[]any{n, err},
+			[]any{"non-marshalable value: (struct {}{})"},
+			[]any{NotMarshalable{struct{}{}}.Error()},
+			true,
 		)
-	}
-
-	{
-		n, err := (&GraniteON{}).ReadFrom(&bytes.Buffer{})
 
 		AssertCallResult(
 			t,
-			"(&GraniteON{}).ReadFrom(&bytes.Buffer{})",
+			"NotMarshalable{io.Writer(nil)}.Error()",
 			[]any{},
-			[]any{int64(0), io.EOF},
-			[]any{n, err},
+			[]any{"non-marshalable value: nil(<nil>)"},
+			[]any{NotMarshalable{io.Writer(nil)}.Error()},
+			true,
 		)
 	}
+
+	assertMarshalToFullDisk(t, "", 0)
+	assertMarshalToFullDisk(t, []byte{}, 0)
+
+	assertMarshalToFullDisk(t, []any{}, 0)
+	assertMarshalToFullDisk(t, []any{nil}, 2)
+
+	assertMarshalToFullDisk(t, map[string]any{}, 0)
+	assertMarshalToFullDisk(t, map[string]any{"": nil}, 2)
+	assertMarshalToFullDisk(t, map[string]any{"": nil}, 4)
+
+	assertUnmarshalFromIncomplete(t, []byte{})
+
+	assertUnmarshalFromIncomplete(t, []byte{0x20})
+	assertUnmarshalFromIncomplete(t, []byte{0x21})
+	assertUnmarshalFromIncomplete(t, []byte{0x22})
+	assertUnmarshalFromIncomplete(t, []byte{0x23})
+
+	assertUnmarshalFromIncomplete(t, []byte{0x30})
+	assertUnmarshalFromIncomplete(t, []byte{0x31})
+	assertUnmarshalFromIncomplete(t, []byte{0x32})
+	assertUnmarshalFromIncomplete(t, []byte{0x33})
+
+	assertUnmarshalFromIncomplete(t, []byte{0x42})
+	assertUnmarshalFromIncomplete(t, []byte{0x43})
+
+	assertUnmarshalFromIncomplete(t, []byte{0x50})
+	assertUnmarshalFromIncomplete(t, []byte{0x51})
+	assertUnmarshalFromIncomplete(t, []byte{0x52})
+	assertUnmarshalFromIncomplete(t, []byte{0x53})
+	assertUnmarshalFromIncomplete(t, []byte{0x50, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{0x51, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{0x52, 0x00, 0x00, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01})
+
+	assertUnmarshalFromIncomplete(t, []byte{0x60})
+	assertUnmarshalFromIncomplete(t, []byte{0x61})
+	assertUnmarshalFromIncomplete(t, []byte{0x62})
+	assertUnmarshalFromIncomplete(t, []byte{0x63})
+	assertUnmarshalFromIncomplete(t, []byte{0x60, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{0x61, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{0x62, 0x00, 0x00, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{0x63, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01})
+
+	assertUnmarshalFromIncomplete(t, []byte{0x70})
+	assertUnmarshalFromIncomplete(t, []byte{0x71})
+	assertUnmarshalFromIncomplete(t, []byte{0x72})
+	assertUnmarshalFromIncomplete(t, []byte{0x73})
+	assertUnmarshalFromIncomplete(t, []byte{0x70, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{0x71, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{0x72, 0x00, 0x00, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{0x73, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{0x70, 0x01, 0x50, 0x00})
+	assertUnmarshalFromIncomplete(t, []byte{0x71, 0x00, 0x01, 0x50, 0x00})
+	assertUnmarshalFromIncomplete(t, []byte{0x72, 0x00, 0x00, 0x00, 0x01, 0x50, 0x00})
+	assertUnmarshalFromIncomplete(t, []byte{0x73, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x50, 0x00})
 
 	{
 		buf := &bytes.Buffer{}
@@ -385,6 +458,16 @@ func TestError(t *testing.T) {
 			[]any{},
 			[]any{int64(1), NotUnmarshalable{0xff}},
 			[]any{n, err},
+			true,
+		)
+
+		AssertCallResult(
+			t,
+			"NotUnmarshalable{0xff}.Error()",
+			[]any{},
+			[]any{"non-unmarshalable type: byte(255)"},
+			[]any{NotUnmarshalable{0xff}.Error()},
+			true,
 		)
 	}
 
@@ -397,6 +480,7 @@ func TestError(t *testing.T) {
 			[]any{},
 			[]any{int64(0), hex.ErrLength},
 			[]any{n, err},
+			true,
 		)
 	}
 
@@ -409,33 +493,51 @@ func TestError(t *testing.T) {
 			[]any{},
 			[]any{int64(0), hex.ErrLength},
 			[]any{n, err},
+			true,
+		)
+	}
+
+	{
+		n, err := GraniteON{brokenJson{[]byte{'{'}}}.WriteTo(nil)
+
+		AssertCallResult(
+			t,
+			"GraniteON{brokenJson{[]byte{'{'}}}.WriteTo(nil)",
+			[]any{},
+			[]any{int64(0), nil},
+			[]any{n, err},
+			false,
 		)
 	}
 }
 
-func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmarshaled any) {
+func assertMarshal(t *testing.T, object any, marshaled []byte) {
 	t.Helper()
 
-	{
-		buf := &bytes.Buffer{}
-		n, err := GraniteON{object}.WriteTo(buf)
+	buf := &bytes.Buffer{}
+	n, err := GraniteON{object}.WriteTo(buf)
 
-		AssertCallResult(
-			t,
-			"GraniteON{%#v}.WriteTo(&bytes.Buffer{})",
-			[]any{object},
-			[]any{int64(len(marshaled)), nil},
-			[]any{n, err},
-		)
+	AssertCallResult(
+		t,
+		"GraniteON{%#v}.WriteTo(&bytes.Buffer{})",
+		[]any{object},
+		[]any{int64(len(marshaled)), nil},
+		[]any{n, err},
+		true,
+	)
 
-		AssertCallResult(
-			t,
-			"GraniteON{%#v}.WriteTo(&bytes.Buffer{}); buf.Bytes()",
-			[]any{object},
-			[]any{marshaled},
-			[]any{buf.Bytes()},
-		)
-	}
+	AssertCallResult(
+		t,
+		"GraniteON{%#v}.WriteTo(&bytes.Buffer{}); buf.Bytes()",
+		[]any{object},
+		[]any{marshaled},
+		[]any{buf.Bytes()},
+		true,
+	)
+}
+
+func assertUnmarshal(t *testing.T, marshaled []byte, unmarshaled any) {
+	t.Helper()
 
 	buf := &bytes.Buffer{}
 	buf.Write(marshaled)
@@ -449,6 +551,7 @@ func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmar
 		[]any{marshaled},
 		[]any{int64(len(marshaled)), nil},
 		[]any{n, err},
+		true,
 	)
 
 	AssertCallResult(
@@ -457,5 +560,45 @@ func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmar
 		[]any{marshaled},
 		[]any{unmarshaled},
 		[]any{um.Object},
+		true,
+	)
+}
+
+func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmarshaled any) {
+	t.Helper()
+
+	assertMarshal(t, object, marshaled)
+	assertUnmarshal(t, marshaled, unmarshaled)
+}
+
+func assertMarshalToFullDisk(t *testing.T, object any, cap int) {
+	t.Helper()
+
+	n, err := GraniteON{object}.WriteTo(&fullDisk{cap})
+
+	AssertCallResult(
+		t,
+		"GraniteON{%#v}.WriteTo(&fullDisk{%d})",
+		[]any{object, cap},
+		[]any{int64(cap), bufio.ErrBufferFull},
+		[]any{n, err},
+		true,
+	)
+}
+
+func assertUnmarshalFromIncomplete(t *testing.T, incomplete []byte) {
+	t.Helper()
+
+	buf := &bytes.Buffer{}
+	buf.Write(incomplete)
+	n, err := (&GraniteON{}).ReadFrom(buf)
+
+	AssertCallResult(
+		t,
+		"(&GraniteON{}).ReadFrom(&bytes.Buffer{%#v})",
+		[]any{incomplete},
+		[]any{int64(len(incomplete)), io.EOF},
+		[]any{n, err},
+		true,
 	)
 }

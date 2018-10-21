@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 	"math"
-	"strconv"
 )
 
 func unmarshalAny(r io.Reader) (o any, n int64, err error) {
@@ -355,30 +354,6 @@ func unpackDict(r io.Reader, l int) (d any, n int64, err error) {
 		}
 
 		switch kk := k.(type) {
-		case nil:
-			kkk = ""
-		case bool:
-			kkk = strconv.FormatBool(kk)
-		case uint8:
-			kkk = strconv.FormatUint(uint64(kk), 10)
-		case uint16:
-			kkk = strconv.FormatUint(uint64(kk), 10)
-		case uint32:
-			kkk = strconv.FormatUint(uint64(kk), 10)
-		case uint64:
-			kkk = strconv.FormatUint(kk, 10)
-		case int8:
-			kkk = strconv.FormatInt(int64(kk), 10)
-		case int16:
-			kkk = strconv.FormatInt(int64(kk), 10)
-		case int32:
-			kkk = strconv.FormatInt(int64(kk), 10)
-		case int64:
-			kkk = strconv.FormatInt(kk, 10)
-		case float32:
-			kkk = strconv.FormatFloat(float64(kk), 'g', -1, 64)
-		case float64:
-			kkk = strconv.FormatFloat(kk, 'g', -1, 64)
 		case string:
 			kkk = kk
 		default:

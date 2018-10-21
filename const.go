@@ -2,8 +2,6 @@ package GraniteON
 
 type any = interface{}
 
-const maxInt = int64(^int(0) >> 1)
-const maxInt32 = int64(^int32(0) >> 1)
 const maxUInt = uint64(^uint(0))
 const maxUInt8 = uint64(^uint8(0))
 const maxUInt16 = uint64(^uint16(0))

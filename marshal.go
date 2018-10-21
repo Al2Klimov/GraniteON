@@ -54,7 +54,7 @@ func marshalAny(o any, w io.Writer) (n int64, err error) {
 		n, errWr := w.Write(buf[:])
 		return int64(n), errWr
 	case int:
-		if maxInt <= maxInt32 {
+		if maxUInt <= maxUInt32 {
 			return marshalAny(int32(oo), w)
 		} else {
 			return marshalAny(int64(oo), w)
@@ -155,18 +155,8 @@ func marshalAny(o any, w io.Writer) (n int64, err error) {
 
 		for _, k := range sortedKeys {
 			{
-				buf, bufLen := packLen(typeString, len(k))
-				m, errWr := w.Write(buf[:bufLen])
-				n += int64(m)
-
-				if errWr != nil {
-					return n, errWr
-				}
-			}
-
-			{
-				m, errWr := w.Write([]byte(k))
-				n += int64(m)
+				m, errWr := marshalAny(k, w)
+				n += m
 
 				if errWr != nil {
 					return n, errWr
