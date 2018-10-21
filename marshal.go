@@ -27,94 +27,53 @@ func marshalAny(o any, w io.Writer) (n int64, err error) {
 		return int64(n), errWr
 	case uint:
 		if maxUInt <= maxUInt32 {
-			return marshalAny(uint32(oo), w)
+			return packUIntBE(uint64(oo), typeUInt32, w)
 		} else {
-			return marshalAny(uint64(oo), w)
+			return packUIntBE(uint64(oo), typeUInt64, w)
 		}
 	case uint8:
-		buf := [2]byte{scalarUInt8, oo}
-		n, errWr := w.Write(buf[:])
-		return int64(n), errWr
+		return packUIntBE(uint64(oo), typeUInt8, w)
 	case uint16:
-		buf := [3]byte{scalarUInt16}
-		i := packUInt16BE(oo)
-		copy(buf[1:], i[:])
-		n, errWr := w.Write(buf[:])
-		return int64(n), errWr
+		return packUIntBE(uint64(oo), typeUInt16, w)
 	case uint32:
-		buf := [5]byte{scalarUInt32}
-		i := packUInt32BE(oo)
-		copy(buf[1:], i[:])
-		n, errWr := w.Write(buf[:])
-		return int64(n), errWr
+		return packUIntBE(uint64(oo), typeUInt32, w)
 	case uint64:
-		buf := [9]byte{scalarUInt64}
-		i := packUInt64BE(oo)
-		copy(buf[1:], i[:])
-		n, errWr := w.Write(buf[:])
-		return int64(n), errWr
+		return packUIntBE(oo, typeUInt64, w)
 	case int:
 		if maxUInt <= maxUInt32 {
-			return marshalAny(int32(oo), w)
+			return packUIntBE(uint64(uint(oo)), typeInt32, w)
 		} else {
-			return marshalAny(int64(oo), w)
+			return packUIntBE(uint64(uint(oo)), typeInt64, w)
 		}
 	case int8:
-		buf := [2]byte{scalarInt8, byte(oo)}
-		n, errWr := w.Write(buf[:])
-		return int64(n), errWr
+		return packUIntBE(uint64(uint8(oo)), typeInt8, w)
 	case int16:
-		buf := [3]byte{scalarInt16}
-		i := packUInt16BE(uint16(oo))
-		copy(buf[1:], i[:])
-		n, errWr := w.Write(buf[:])
-		return int64(n), errWr
+		return packUIntBE(uint64(uint16(oo)), typeInt16, w)
 	case int32:
-		buf := [5]byte{scalarInt32}
-		i := packUInt32BE(uint32(oo))
-		copy(buf[1:], i[:])
-		n, errWr := w.Write(buf[:])
-		return int64(n), errWr
+		return packUIntBE(uint64(uint32(oo)), typeInt32, w)
 	case int64:
-		buf := [9]byte{scalarInt64}
-		i := packUInt64BE(uint64(oo))
-		copy(buf[1:], i[:])
-		n, errWr := w.Write(buf[:])
-		return int64(n), errWr
+		return packUIntBE(uint64(oo), typeInt64, w)
 	case float32:
-		buf := [5]byte{scalarFloat32}
-		f := packUInt32BE(math.Float32bits(oo))
-		copy(buf[1:], f[:])
-		n, errWr := w.Write(buf[:])
-		return int64(n), errWr
+		return packFloatBE(uint64(math.Float32bits(oo))<<32, typeFloat32, w)
 	case float64:
-		buf := [9]byte{scalarFloat64}
-		f := packUInt64BE(math.Float64bits(oo))
-		copy(buf[1:], f[:])
-		n, errWr := w.Write(buf[:])
-		return int64(n), errWr
+		return packFloatBE(math.Float64bits(oo), typeFloat64, w)
 	case string:
 		return marshalAny([]byte(oo), w)
 	case []byte:
-		buf, bufLen := packLen(typeString, len(oo))
-		n, errWr1 := w.Write(buf[:bufLen])
-		if errWr1 != nil {
-			return int64(n), errWr1
+		n, err = packUIntBE(uint64(len(oo)), typeString, w)
+		if err != nil {
+			return
 		}
 
-		m, errWr2 := w.Write(oo)
-		return int64(n + m), errWr2
+		var m int
+		m, err = w.Write(oo)
+		n += int64(m)
+
+		return
 	case []any:
-		var n int64
-
-		{
-			buf, bufLen := packLen(typeArray, len(oo))
-			m, errWr := w.Write(buf[:bufLen])
-			if errWr != nil {
-				return int64(m), errWr
-			}
-
-			n = int64(m)
+		n, err = packUIntBE(uint64(len(oo)), typeArray, w)
+		if err != nil {
+			return
 		}
 
 		for _, v := range oo {
@@ -126,7 +85,7 @@ func marshalAny(o any, w io.Writer) (n int64, err error) {
 			}
 		}
 
-		return n, nil
+		return
 	case map[string]any:
 		sortedKeys := make([]string, len(oo))
 
@@ -141,16 +100,9 @@ func marshalAny(o any, w io.Writer) (n int64, err error) {
 
 		sort.Strings(sortedKeys)
 
-		var n int64
-
-		{
-			buf, bufLen := packLen(typeDict, len(oo))
-			m, errWr := w.Write(buf[:bufLen])
-			if errWr != nil {
-				return int64(m), errWr
-			}
-
-			n = int64(m)
+		n, err = packUIntBE(uint64(len(oo)), typeDict, w)
+		if err != nil {
+			return
 		}
 
 		for _, k := range sortedKeys {
@@ -171,7 +123,7 @@ func marshalAny(o any, w io.Writer) (n int64, err error) {
 			}
 		}
 
-		return n, nil
+		return
 	case json.Marshaler:
 		jsn, errMJ := oo.MarshalJSON()
 		if errMJ != nil {
@@ -198,24 +150,8 @@ func marshalAny(o any, w io.Writer) (n int64, err error) {
 	}
 }
 
-func packUInt16BE(i uint16) [2]byte {
-	return [2]byte{
-		byte(i >> 8),
-		byte(i),
-	}
-}
-
-func packUInt32BE(i uint32) [4]byte {
-	return [4]byte{
-		byte(i >> 24),
-		byte(i >> 16),
-		byte(i >> 8),
-		byte(i),
-	}
-}
-
-func packUInt64BE(i uint64) [8]byte {
-	return [8]byte{
+func packUIntBE(i uint64, typ byte, w io.Writer) (n int64, err error) {
+	packedInt := [8]byte{
 		byte(i >> 56),
 		byte(i >> 48),
 		byte(i >> 40),
@@ -225,31 +161,47 @@ func packUInt64BE(i uint64) [8]byte {
 		byte(i >> 8),
 		byte(i),
 	}
-}
 
-func packLen(typ byte, l int) (buf [9]byte, bufLen uint8) {
-	i := uint64(l)
+	off := 7
 
-	if i <= maxUInt8 {
-		buf[0] = typ | effSize8
-		buf[1] = byte(i)
-		bufLen = 2
-	} else if i <= maxUInt16 {
-		buf[0] = typ | effSize16
-		ii := packUInt16BE(uint16(i))
-		copy(buf[1:], ii[:])
-		bufLen = 3
-	} else if i <= maxUInt32 {
-		buf[0] = typ | effSize32
-		ii := packUInt32BE(uint32(i))
-		copy(buf[1:], ii[:])
-		bufLen = 5
-	} else {
-		buf[0] = typ | effSize64
-		ii := packUInt64BE(i)
-		copy(buf[1:], ii[:])
-		bufLen = 9
+	for i := 0; i < 8; i++ {
+		if packedInt[i] != 0 {
+			off = i
+			break
+		}
 	}
 
-	return
+	buf := [9]byte{typ | byte(7-off)}
+	copy(buf[1:], packedInt[off:])
+
+	m, errWr := w.Write(buf[:9-off])
+	return int64(m), errWr
+}
+
+func packFloatBE(f uint64, typ byte, w io.Writer) (n int64, err error) {
+	packedFloat := [8]byte{
+		byte(f >> 56),
+		byte(f >> 48),
+		byte(f >> 40),
+		byte(f >> 32),
+		byte(f >> 24),
+		byte(f >> 16),
+		byte(f >> 8),
+		byte(f),
+	}
+
+	cap := 0
+
+	for i := 7; i > -1; i-- {
+		if packedFloat[i] != 0 {
+			cap = i
+			break
+		}
+	}
+
+	buf := [9]byte{typ | byte(cap)}
+	copy(buf[1:], packedFloat[:cap+1])
+
+	m, errWr := w.Write(buf[:cap+2])
+	return int64(m), errWr
 }

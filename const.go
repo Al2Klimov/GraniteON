@@ -3,9 +3,14 @@ package GraniteON
 type any = interface{}
 
 const maxUInt = uint64(^uint(0))
-const maxUInt8 = uint64(^uint8(0))
-const maxUInt16 = uint64(^uint16(0))
 const maxUInt32 = uint64(^uint32(0))
+
+const typeBits = byte(7 << 5)
+const typeSizeBits = byte(3 << 3)
+const effSizeBits = byte(7)
+
+const sizeBits = typeSizeBits | effSizeBits
+const typeAndSizeBits = typeBits | typeSizeBits
 
 const typeNil = byte(0)
 const typeBool = byte(1 << 5)
@@ -34,23 +39,47 @@ const scalarNil = typeNil // | 0
 const scalarFalse = typeBool // | 0
 const scalarTrue = typeBool | 1
 
-const scalarUInt8 = typeUInt | typeSize8 | effSize8
-const scalarUInt16 = typeUInt | typeSize16 | effSize16
-const scalarUInt32 = typeUInt | typeSize32 | effSize32
-const scalarUInt64 = typeUInt | typeSize64 | effSize64
+const typeUInt8 = typeUInt | typeSize8
+const typeUInt16 = typeUInt | typeSize16
+const typeUInt32 = typeUInt | typeSize32
+const typeUInt64 = typeUInt | typeSize64
 
-const scalarInt8 = typeInt | typeSize8 | effSize8
-const scalarInt16 = typeInt | typeSize16 | effSize16
-const scalarInt32 = typeInt | typeSize32 | effSize32
-const scalarInt64 = typeInt | typeSize64 | effSize64
+const scalar8UInt8 = typeUInt8 | effSize8
+const scalar8UInt16 = typeUInt16 | effSize8
+const scalar16UInt16 = typeUInt16 | effSize16
+const scalar8UInt32 = typeUInt32 | effSize8
+const scalar32UInt32 = typeUInt32 | effSize32
+const scalar8UInt64 = typeUInt64 | effSize8
+const scalar64UInt64 = typeUInt64 | effSize64
 
-const scalarFloat32 = typeFloat | typeSize32 | effSize32
-const scalarFloat64 = typeFloat | typeSize64 | effSize64
+const typeInt8 = typeInt | typeSize8
+const typeInt16 = typeInt | typeSize16
+const typeInt32 = typeInt | typeSize32
+const typeInt64 = typeInt | typeSize64
 
-const scalarString8 = typeString | effSize8
-const scalarString16 = typeString | effSize16
-const scalarString32 = typeString | effSize32
-const scalarString64 = typeString | effSize64
+const scalar8Int8 = typeInt8 | effSize8
+const scalar8Int16 = typeInt16 | effSize8
+const scalar16Int16 = typeInt16 | effSize16
+const scalar8Int32 = typeInt32 | effSize8
+const scalar32Int32 = typeInt32 | effSize32
+const scalar8Int64 = typeInt64 | effSize8
+const scalar64Int64 = typeInt64 | effSize64
+
+const typeFloat32 = typeFloat | typeSize32
+const typeFloat64 = typeFloat | typeSize64
+
+const scalar8Float32 = typeFloat32 | effSize8
+const scalar16Float32 = typeFloat32 | effSize16
+const scalar32Float32 = typeFloat32 | effSize32
+const scalar8Float64 = typeFloat64 | effSize8
+const scalar16Float64 = typeFloat64 | effSize16
+const scalar64Float64 = typeFloat64 | effSize64
+
+const string8 = typeString | effSize8
+const string16 = typeString | effSize16
+const string24 = typeString | effSize24
+const string32 = typeString | effSize32
+const string64 = typeString | effSize64
 
 const array8 = typeArray | effSize8
 const array16 = typeArray | effSize16

@@ -17,293 +17,169 @@ func unmarshalAny(r io.Reader) (o any, n int64, err error) {
 		return
 	}
 
-	switch buf[0] {
-	case scalarNil:
-		o = nil
-	case scalarFalse:
-		o = false
-	case scalarTrue:
-		o = true
-	case scalarUInt8:
-		var i uint8
-		i, m, err = unpackUInt8(r)
-		n += int64(m)
-
-		if err != nil {
-			return
+	switch buf[0] & typeBits {
+	case typeNil:
+		if buf[0]&sizeBits == 0 {
+			o = nil
+		} else {
+			err = NotUnmarshalable{buf[0]}
 		}
-
-		o = i
-	case scalarUInt16:
-		var i uint16
-		i, m, err = unpackUInt16BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
+	case typeBool:
+		switch buf[0] & sizeBits {
+		case 0:
+			o = false
+		case 1:
+			o = true
+		default:
+			err = NotUnmarshalable{buf[0]}
 		}
-
-		o = i
-	case scalarUInt32:
-		var i uint32
-		i, m, err = unpackUInt32BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		o = i
-	case scalarUInt64:
+	case typeUInt, typeInt:
 		var i uint64
-		i, m, err = unpackUInt64BE(r)
+		i, m, err = unpackUIntBE(buf[0], r)
 		n += int64(m)
 
 		if err != nil {
 			return
 		}
 
-		o = i
-	case scalarInt8:
-		var i uint8
-		i, m, err = unpackUInt8(r)
-		n += int64(m)
-
-		if err != nil {
-			return
+		switch buf[0] & typeAndSizeBits {
+		case typeUInt8:
+			o = uint8(i)
+		case typeUInt16:
+			o = uint16(i)
+		case typeUInt32:
+			o = uint32(i)
+		case typeUInt64:
+			o = i
+		case typeInt8:
+			o = int8(uint8(i))
+		case typeInt16:
+			o = int16(uint16(i))
+		case typeInt32:
+			o = int32(uint32(i))
+		case typeInt64:
+			o = int64(i)
 		}
+	case typeFloat:
+		switch buf[0] & typeAndSizeBits {
+		case typeFloat32, typeFloat64:
+			var i uint64
+			i, m, err = unpackFloatBE(buf[0], r)
+			n += int64(m)
 
-		o = int8(i)
-	case scalarInt16:
-		var i uint16
-		i, m, err = unpackUInt16BE(r)
-		n += int64(m)
+			if err != nil {
+				return
+			}
 
-		if err != nil {
-			return
+			switch buf[0] & typeAndSizeBits {
+			case typeFloat32:
+				o = math.Float32frombits(uint32(i >> 32))
+			default:
+				o = math.Float64frombits(i)
+			}
+		default:
+			err = NotUnmarshalable{buf[0]}
 		}
+	case typeString:
+		if buf[0]&typeSizeBits == 0 {
+			var l uint64
+			l, m, err = unpackUIntBE(buf[0], r)
+			n += int64(m)
 
-		o = int16(i)
-	case scalarInt32:
-		var i uint32
-		i, m, err = unpackUInt32BE(r)
-		n += int64(m)
+			if err != nil {
+				return
+			}
 
-		if err != nil {
-			return
+			buf := make([]byte, l)
+			m, err = r.Read(buf)
+			n += int64(m)
+
+			if err != nil {
+				return
+			}
+
+			o = string(buf)
+		} else {
+			err = NotUnmarshalable{buf[0]}
 		}
+	case typeArray:
+		if buf[0]&typeSizeBits == 0 {
+			var l uint64
+			l, m, err = unpackUIntBE(buf[0], r)
+			n += int64(m)
 
-		o = int32(i)
-	case scalarInt64:
-		var i uint64
-		i, m, err = unpackUInt64BE(r)
-		n += int64(m)
+			if err != nil {
+				return
+			}
 
-		if err != nil {
-			return
+			var m int64
+			a := make([]any, l)
+
+			for i := uint64(0); i < l; i++ {
+				a[i], m, err = unmarshalAny(r)
+				n += m
+
+				if err != nil {
+					return
+				}
+			}
+
+			o = a
+		} else {
+			err = NotUnmarshalable{buf[0]}
 		}
+	case typeDict:
+		if buf[0]&typeSizeBits == 0 {
+			var l uint64
+			l, m, err = unpackUIntBE(buf[0], r)
+			n += int64(m)
 
-		o = int64(i)
-	case scalarFloat32:
-		var i uint32
-		i, m, err = unpackUInt32BE(r)
-		n += int64(m)
+			if err != nil {
+				return
+			}
 
-		if err != nil {
-			return
+			d := make(map[string]any, l)
+			var m int64
+			var k any
+			var kkk string
+
+			for i := uint64(0); i < l; i++ {
+				k, m, err = unmarshalAny(r)
+				n += m
+
+				if err != nil {
+					return
+				}
+
+				switch kk := k.(type) {
+				case string:
+					kkk = kk
+				default:
+					buf := &bytes.Buffer{}
+					GraniteON{k}.WriteTo(buf)
+					kkk = buf.String()
+				}
+
+				d[kkk], m, err = unmarshalAny(r)
+				n += m
+
+				if err != nil {
+					return
+				}
+			}
+
+			o = d
+		} else {
+			err = NotUnmarshalable{buf[0]}
 		}
-
-		o = math.Float32frombits(i)
-	case scalarFloat64:
-		var i uint64
-		i, m, err = unpackUInt64BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		o = math.Float64frombits(i)
-	case scalarString8:
-		var l uint8
-		l, m, err = unpackUInt8(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		o, m, err = unpackString(r, int(l))
-		n += int64(m)
-	case scalarString16:
-		var l uint16
-		l, m, err = unpackUInt16BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		o, m, err = unpackString(r, int(l))
-		n += int64(m)
-	case scalarString32:
-		var l uint32
-		l, m, err = unpackUInt32BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		o, m, err = unpackString(r, int(l))
-		n += int64(m)
-	case scalarString64:
-		var l uint64
-		l, m, err = unpackUInt64BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		o, m, err = unpackString(r, int(l))
-		n += int64(m)
-	case array8:
-		var l uint8
-		l, m, err = unpackUInt8(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		var m int64
-		o, m, err = unpackArray(r, int(l))
-		n += m
-	case array16:
-		var l uint16
-		l, m, err = unpackUInt16BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		var m int64
-		o, m, err = unpackArray(r, int(l))
-		n += m
-	case array32:
-		var l uint32
-		l, m, err = unpackUInt32BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		var m int64
-		o, m, err = unpackArray(r, int(l))
-		n += m
-	case array64:
-		var l uint64
-		l, m, err = unpackUInt64BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		var m int64
-		o, m, err = unpackArray(r, int(l))
-		n += m
-	case dict8:
-		var l uint8
-		l, m, err = unpackUInt8(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		var m int64
-		o, m, err = unpackDict(r, int(l))
-		n += m
-	case dict16:
-		var l uint16
-		l, m, err = unpackUInt16BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		var m int64
-		o, m, err = unpackDict(r, int(l))
-		n += m
-	case dict32:
-		var l uint32
-		l, m, err = unpackUInt32BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		var m int64
-		o, m, err = unpackDict(r, int(l))
-		n += m
-	case dict64:
-		var l uint64
-		l, m, err = unpackUInt64BE(r)
-		n += int64(m)
-
-		if err != nil {
-			return
-		}
-
-		var m int64
-		o, m, err = unpackDict(r, int(l))
-		n += m
-	default:
-		err = NotUnmarshalable{buf[0]}
 	}
 
 	return
 }
 
-func unpackUInt8(r io.Reader) (i uint8, n int, err error) {
-	var buf [1]byte
-	if n, err = r.Read(buf[:]); err != nil {
-		return
-	}
-
-	i = buf[0]
-	return
-}
-
-func unpackUInt16BE(r io.Reader) (i uint16, n int, err error) {
-	var buf [2]byte
-	if n, err = r.Read(buf[:]); err != nil {
-		return
-	}
-
-	i = (uint16(buf[0]) << 8) | uint16(buf[1])
-	return
-}
-
-func unpackUInt32BE(r io.Reader) (i uint32, n int, err error) {
-	var buf [4]byte
-	if n, err = r.Read(buf[:]); err != nil {
-		return
-	}
-
-	i = (uint32(buf[0]) << 24) | (uint32(buf[1]) << 16) | (uint32(buf[2]) << 8) | uint32(buf[3])
-	return
-}
-
-func unpackUInt64BE(r io.Reader) (i uint64, n int, err error) {
+func unpackUIntBE(typ byte, r io.Reader) (i uint64, n int, err error) {
 	var buf [8]byte
-	if n, err = r.Read(buf[:]); err != nil {
+	if n, err = r.Read(buf[7-(typ&effSizeBits):]); err != nil {
 		return
 	}
 
@@ -312,64 +188,13 @@ func unpackUInt64BE(r io.Reader) (i uint64, n int, err error) {
 	return
 }
 
-func unpackString(r io.Reader, l int) (s any, n int, err error) {
-	buf := make([]byte, l)
-	if n, err = r.Read(buf); err != nil {
+func unpackFloatBE(typ byte, r io.Reader) (i uint64, n int, err error) {
+	var buf [8]byte
+	if n, err = r.Read(buf[:(typ&effSizeBits)+1]); err != nil {
 		return
 	}
 
-	s = string(buf)
-	return
-}
-
-func unpackArray(r io.Reader, l int) (a any, n int64, err error) {
-	aa := make([]any, l)
-	var m int64
-
-	for i := 0; i < l; i++ {
-		aa[i], m, err = unmarshalAny(r)
-		n += m
-
-		if err != nil {
-			return
-		}
-	}
-
-	a = aa
-	return
-}
-
-func unpackDict(r io.Reader, l int) (d any, n int64, err error) {
-	dd := make(map[string]any, l)
-	var m int64
-	var k any
-	var kkk string
-
-	for i := 0; i < l; i++ {
-		k, m, err = unmarshalAny(r)
-		n += m
-
-		if err != nil {
-			return
-		}
-
-		switch kk := k.(type) {
-		case string:
-			kkk = kk
-		default:
-			buf := &bytes.Buffer{}
-			GraniteON{k}.WriteTo(buf)
-			kkk = buf.String()
-		}
-
-		dd[kkk], m, err = unmarshalAny(r)
-		n += m
-
-		if err != nil {
-			return
-		}
-	}
-
-	d = dd
+	i = (uint64(buf[0]) << 56) | (uint64(buf[1]) << 48) | (uint64(buf[2]) << 40) | (uint64(buf[3]) << 32) |
+		(uint64(buf[4]) << 24) | (uint64(buf[5]) << 16) | (uint64(buf[6]) << 8) | uint64(buf[7])
 	return
 }
