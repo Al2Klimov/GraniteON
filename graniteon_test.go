@@ -206,6 +206,88 @@ func TestString(t *testing.T) {
 	}
 }
 
+func TestArray(t *testing.T) {
+	assertMarshalAndUnmarshal(t, []any{}, []byte{0x60, 0x00}, []any{})
+	assertMarshalAndUnmarshal(t, []any{nil}, []byte{0x60, 0x01, 0x00}, []any{nil})
+	assertMarshalAndUnmarshal(t, []any{false}, []byte{0x60, 0x01, 0x10}, []any{false})
+	assertMarshalAndUnmarshal(t, []any{true}, []byte{0x60, 0x01, 0x11}, []any{true})
+	assertMarshalAndUnmarshal(t, []any{uint16(1)}, []byte{0x60, 0x01, 0x21, 0x00, 0x01}, []any{uint16(1)})
+	assertMarshalAndUnmarshal(t, []any{int32(2)}, []byte{0x60, 0x01, 0x32, 0x00, 0x00, 0x00, 0x02}, []any{int32(2)})
+	assertMarshalAndUnmarshal(t, []any{float64(3)}, []byte{0x60, 0x01, 0x43, 0x40, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, []any{float64(3)})
+	assertMarshalAndUnmarshal(t, []any{"x"}, []byte{0x60, 0x01, 0x50, 0x01, 'x'}, []any{"x"})
+	assertMarshalAndUnmarshal(t, []any{[]any{}}, []byte{0x60, 0x01, 0x60, 0x00}, []any{[]any{}})
+	assertMarshalAndUnmarshal(t, []any{map[string]any{}}, []byte{0x60, 0x01, 0x70, 0x00}, []any{map[string]any{}})
+
+	assertMarshalAndUnmarshal(
+		t,
+		[]any{map[string]any{}, []any{}, "x", float64(3), int32(2), uint16(1), true, false, nil},
+		[]byte{
+			0x60, 0x09,
+			0x70, 0x00,
+			0x60, 0x00,
+			0x50, 0x01, 'x',
+			0x43, 0x40, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x32, 0x00, 0x00, 0x00, 0x02,
+			0x21, 0x00, 0x01,
+			0x11,
+			0x10,
+			0x00,
+		},
+		[]any{map[string]any{}, []any{}, "x", float64(3), int32(2), uint16(1), true, false, nil},
+	)
+}
+
+func TestDict(t *testing.T) {
+	assertMarshalAndUnmarshal(t, map[string]any{}, []byte{0x70, 0x00}, map[string]any{})
+	assertMarshalAndUnmarshal(t, map[string]any{"nil": nil}, []byte{0x70, 0x01, 0x50, 0x03, 'n', 'i', 'l', 0x00}, map[string]any{"nil": nil})
+	assertMarshalAndUnmarshal(t, map[string]any{"false": false}, []byte{0x70, 0x01, 0x50, 0x05, 'f', 'a', 'l', 's', 'e', 0x10}, map[string]any{"false": false})
+	assertMarshalAndUnmarshal(t, map[string]any{"true": true}, []byte{0x70, 0x01, 0x50, 0x04, 't', 'r', 'u', 'e', 0x11}, map[string]any{"true": true})
+	assertMarshalAndUnmarshal(t, map[string]any{"uint16(1)": uint16(1)}, []byte{0x70, 0x01, 0x50, 0x09, 'u', 'i', 'n', 't', '1', '6', '(', '1', ')', 0x21, 0x00, 0x01}, map[string]any{"uint16(1)": uint16(1)})
+	assertMarshalAndUnmarshal(t, map[string]any{"int32(2)": int32(2)}, []byte{0x70, 0x01, 0x50, 0x08, 'i', 'n', 't', '3', '2', '(', '2', ')', 0x32, 0x00, 0x00, 0x00, 0x02}, map[string]any{"int32(2)": int32(2)})
+	assertMarshalAndUnmarshal(t, map[string]any{"float64(3)": float64(3)}, []byte{0x70, 0x01, 0x50, 0x0a, 'f', 'l', 'o', 'a', 't', '6', '4', '(', '3', ')', 0x43, 0x40, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, map[string]any{"float64(3)": float64(3)})
+	assertMarshalAndUnmarshal(t, map[string]any{`"x"`: "x"}, []byte{0x70, 0x01, 0x50, 0x03, '"', 'x', '"', 0x50, 0x01, 'x'}, map[string]any{`"x"`: "x"})
+	assertMarshalAndUnmarshal(t, map[string]any{"[]any{}": []any{}}, []byte{0x70, 0x01, 0x50, 0x07, '[', ']', 'a', 'n', 'y', '{', '}', 0x60, 0x00}, map[string]any{"[]any{}": []any{}})
+	assertMarshalAndUnmarshal(t, map[string]any{"map[string]any{}": map[string]any{}}, []byte{0x70, 0x01, 0x50, 0x10, 'm', 'a', 'p', '[', 's', 't', 'r', 'i', 'n', 'g', ']', 'a', 'n', 'y', '{', '}', 0x70, 0x00}, map[string]any{"map[string]any{}": map[string]any{}})
+
+	assertMarshalAndUnmarshal(
+		t,
+		map[string]any{
+			"map[string]any{}": map[string]any{},
+			"[]any{}":          []any{},
+			`"x"`:              "x",
+			"float64(3)":       float64(3),
+			"int32(2)":         int32(2),
+			"uint16(1)":        uint16(1),
+			"true":             true,
+			"false":            false,
+			"nil":              nil,
+		},
+		[]byte{
+			0x70, 0x09,
+			0x50, 0x03, '"', 'x', '"', 0x50, 0x01, 'x',
+			0x50, 0x07, '[', ']', 'a', 'n', 'y', '{', '}', 0x60, 0x00,
+			0x50, 0x05, 'f', 'a', 'l', 's', 'e', 0x10,
+			0x50, 0x0a, 'f', 'l', 'o', 'a', 't', '6', '4', '(', '3', ')', 0x43, 0x40, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x50, 0x08, 'i', 'n', 't', '3', '2', '(', '2', ')', 0x32, 0x00, 0x00, 0x00, 0x02,
+			0x50, 0x10, 'm', 'a', 'p', '[', 's', 't', 'r', 'i', 'n', 'g', ']', 'a', 'n', 'y', '{', '}', 0x70, 0x00,
+			0x50, 0x03, 'n', 'i', 'l', 0x00,
+			0x50, 0x04, 't', 'r', 'u', 'e', 0x11,
+			0x50, 0x09, 'u', 'i', 'n', 't', '1', '6', '(', '1', ')', 0x21, 0x00, 0x01,
+		},
+		map[string]any{
+			"map[string]any{}": map[string]any{},
+			"[]any{}":          []any{},
+			`"x"`:              "x",
+			"float64(3)":       float64(3),
+			"int32(2)":         int32(2),
+			"uint16(1)":        uint16(1),
+			"true":             true,
+			"false":            false,
+			"nil":              nil,
+		},
+	)
+}
+
 func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmarshaled any) {
 	t.Helper()
 
