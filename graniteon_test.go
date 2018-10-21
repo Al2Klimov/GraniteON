@@ -1,12 +1,55 @@
 package GraniteON
 
 import (
+	"bufio"
 	"bytes"
+	"encoding/hex"
+	"encoding/json"
 	. "github.com/Al2Klimov/go-test-utils"
+	"io"
 	"math"
 	"math/rand"
 	"testing"
 )
+
+type cat struct {
+	desc string
+}
+
+func (c cat) String() string {
+	return c.desc
+}
+
+type lolcat struct {
+	hasCheezBurger bool
+}
+
+func (l lolcat) MarshalText() (text []byte, err error) {
+	if l.hasCheezBurger {
+		return []byte("I has cheezburger!"), nil
+	}
+
+	return nil, hex.ErrLength
+}
+
+type grumpycat struct {
+	motd string
+}
+
+func (g grumpycat) MarshalJSON() ([]byte, error) {
+	if g.motd == "" {
+		return nil, hex.ErrLength
+	}
+
+	return json.Marshal(map[string]any{"motd": g.motd})
+}
+
+type fullDisk struct {
+}
+
+func (fullDisk) Write(p []byte) (n int, err error) {
+	return 0, bufio.ErrBufferFull
+}
 
 func TestNil(t *testing.T) {
 	assertMarshalAndUnmarshal(t, nil, []byte{0x00}, nil)
@@ -286,6 +329,88 @@ func TestDict(t *testing.T) {
 			"nil":              nil,
 		},
 	)
+}
+
+func TestSpecial(t *testing.T) {
+	assertMarshalAndUnmarshal(t, cat{"has mouse"}, []byte{0x50, 0x09, 'h', 'a', 's', ' ', 'm', 'o', 'u', 's', 'e'}, "has mouse")
+	assertMarshalAndUnmarshal(t, lolcat{true}, []byte{0x50, 0x12, 'I', ' ', 'h', 'a', 's', ' ', 'c', 'h', 'e', 'e', 'z', 'b', 'u', 'r', 'g', 'e', 'r', '!'}, "I has cheezburger!")
+	assertMarshalAndUnmarshal(t, grumpycat{`-.-"`}, []byte{0x70, 0x01, 0x50, 0x04, 'm', 'o', 't', 'd', 0x50, 0x04, '-', '.', '-', '"'}, map[string]any{"motd": `-.-"`})
+}
+
+func TestError(t *testing.T) {
+	{
+		n, err := GraniteON{struct{}{}}.WriteTo(nil)
+
+		AssertCallResult(
+			t,
+			"GraniteON{struct{}{}}.WriteTo(nil)",
+			[]any{},
+			[]any{int64(0), NotMarshalable{struct{}{}}},
+			[]any{n, err},
+		)
+	}
+
+	{
+		n, err := GraniteON{nil}.WriteTo(fullDisk{})
+
+		AssertCallResult(
+			t,
+			"GraniteON{nil}.WriteTo(fullDisk{})",
+			[]any{},
+			[]any{int64(0), bufio.ErrBufferFull},
+			[]any{n, err},
+		)
+	}
+
+	{
+		n, err := (&GraniteON{}).ReadFrom(&bytes.Buffer{})
+
+		AssertCallResult(
+			t,
+			"(&GraniteON{}).ReadFrom(&bytes.Buffer{})",
+			[]any{},
+			[]any{int64(0), io.EOF},
+			[]any{n, err},
+		)
+	}
+
+	{
+		buf := &bytes.Buffer{}
+		buf.Write([]byte{0xff})
+		n, err := (&GraniteON{}).ReadFrom(buf)
+
+		AssertCallResult(
+			t,
+			"(&GraniteON{}).ReadFrom(&bytes.Buffer{[]byte{0xff}})",
+			[]any{},
+			[]any{int64(1), NotUnmarshalable{0xff}},
+			[]any{n, err},
+		)
+	}
+
+	{
+		n, err := GraniteON{lolcat{false}}.WriteTo(nil)
+
+		AssertCallResult(
+			t,
+			"GraniteON{lolcat{false}}.WriteTo(nil)",
+			[]any{},
+			[]any{int64(0), hex.ErrLength},
+			[]any{n, err},
+		)
+	}
+
+	{
+		n, err := GraniteON{grumpycat{""}}.WriteTo(nil)
+
+		AssertCallResult(
+			t,
+			`GraniteON{grumpycat{""}}.WriteTo(nil)`,
+			[]any{},
+			[]any{int64(0), hex.ErrLength},
+			[]any{n, err},
+		)
+	}
 }
 
 func assertMarshalAndUnmarshal(t *testing.T, object any, marshaled []byte, unmarshaled any) {
