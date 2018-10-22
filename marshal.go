@@ -26,37 +26,37 @@ func marshalAny(o any, w io.Writer) (n int64, err error) {
 		n, errWr := w.Write(buf[:])
 		return int64(n), errWr
 	case uint:
-		if maxUInt <= maxUInt32 {
-			return packUIntBE(uint64(oo), typeUInt32, w)
+		if cpuHas32bits {
+			return packUIntBE(uint64(oo), typeUInt|typeSize32, w)
 		} else {
-			return packUIntBE(uint64(oo), typeUInt64, w)
+			return packUIntBE(uint64(oo), typeUInt|typeSize64, w)
 		}
 	case uint8:
-		return packUIntBE(uint64(oo), typeUInt8, w)
+		return packUIntBE(uint64(oo), typeUInt|typeSize8, w)
 	case uint16:
-		return packUIntBE(uint64(oo), typeUInt16, w)
+		return packUIntBE(uint64(oo), typeUInt|typeSize16, w)
 	case uint32:
-		return packUIntBE(uint64(oo), typeUInt32, w)
+		return packUIntBE(uint64(oo), typeUInt|typeSize32, w)
 	case uint64:
-		return packUIntBE(oo, typeUInt64, w)
+		return packUIntBE(oo, typeUInt|typeSize64, w)
 	case int:
-		if maxUInt <= maxUInt32 {
-			return packUIntBE(uint64(uint(oo)), typeInt32, w)
+		if cpuHas32bits {
+			return packUIntBE(uint64(uint(oo)), typeInt|typeSize32, w)
 		} else {
-			return packUIntBE(uint64(uint(oo)), typeInt64, w)
+			return packUIntBE(uint64(uint(oo)), typeInt|typeSize64, w)
 		}
 	case int8:
-		return packUIntBE(uint64(uint8(oo)), typeInt8, w)
+		return packUIntBE(uint64(uint8(oo)), typeInt|typeSize8, w)
 	case int16:
-		return packUIntBE(uint64(uint16(oo)), typeInt16, w)
+		return packUIntBE(uint64(uint16(oo)), typeInt|typeSize16, w)
 	case int32:
-		return packUIntBE(uint64(uint32(oo)), typeInt32, w)
+		return packUIntBE(uint64(uint32(oo)), typeInt|typeSize32, w)
 	case int64:
-		return packUIntBE(uint64(oo), typeInt64, w)
+		return packUIntBE(uint64(oo), typeInt|typeSize64, w)
 	case float32:
-		return packFloatBE(uint64(math.Float32bits(oo))<<32, typeFloat32, w)
+		return packFloatBE(uint64(math.Float32bits(oo))<<32, typeFloat|typeSize32, w)
 	case float64:
-		return packFloatBE(math.Float64bits(oo), typeFloat64, w)
+		return packFloatBE(math.Float64bits(oo), typeFloat|typeSize64, w)
 	case string:
 		return marshalAny([]byte(oo), w)
 	case []byte:

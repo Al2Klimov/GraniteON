@@ -19,13 +19,13 @@ func unmarshalAny(r io.Reader) (o any, n int64, err error) {
 
 	switch buf[0] & typeBits {
 	case typeNil:
-		if buf[0]&sizeBits == 0 {
+		if buf[0]&(^typeBits) == 0 {
 			o = nil
 		} else {
 			err = NotUnmarshalable{buf[0]}
 		}
 	case typeBool:
-		switch buf[0] & sizeBits {
+		switch buf[0] & (^typeBits) {
 		case 0:
 			o = false
 		case 1:
@@ -42,27 +42,27 @@ func unmarshalAny(r io.Reader) (o any, n int64, err error) {
 			return
 		}
 
-		switch buf[0] & typeAndSizeBits {
-		case typeUInt8:
+		switch buf[0] & (typeBits | typeSizeBits) {
+		case typeUInt | typeSize8:
 			o = uint8(i)
-		case typeUInt16:
+		case typeUInt | typeSize16:
 			o = uint16(i)
-		case typeUInt32:
+		case typeUInt | typeSize32:
 			o = uint32(i)
-		case typeUInt64:
+		case typeUInt | typeSize64:
 			o = i
-		case typeInt8:
+		case typeInt | typeSize8:
 			o = int8(uint8(i))
-		case typeInt16:
+		case typeInt | typeSize16:
 			o = int16(uint16(i))
-		case typeInt32:
+		case typeInt | typeSize32:
 			o = int32(uint32(i))
-		case typeInt64:
+		case typeInt | typeSize64:
 			o = int64(i)
 		}
 	case typeFloat:
-		switch buf[0] & typeAndSizeBits {
-		case typeFloat32, typeFloat64:
+		switch buf[0] & (typeBits | typeSizeBits) {
+		case typeFloat | typeSize32, typeFloat | typeSize64:
 			var i uint64
 			i, m, err = unpackFloatBE(buf[0], r)
 			n += int64(m)
@@ -71,8 +71,8 @@ func unmarshalAny(r io.Reader) (o any, n int64, err error) {
 				return
 			}
 
-			switch buf[0] & typeAndSizeBits {
-			case typeFloat32:
+			switch buf[0] & (typeBits | typeSizeBits) {
+			case typeFloat | typeSize32:
 				o = math.Float32frombits(uint32(i >> 32))
 			default:
 				o = math.Float64frombits(i)

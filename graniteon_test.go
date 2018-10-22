@@ -81,123 +81,123 @@ func TestBool(t *testing.T) {
 }
 
 func TestUInt(t *testing.T) {
-	if maxUInt <= maxUInt32 {
-		assertMarshalAndUnmarshal(t, uint(0), []byte{scalar8UInt32, 0x00}, uint32(0))
-		assertMarshalAndUnmarshal(t, uint(1), []byte{scalar8UInt32, 0x01}, uint32(1))
-		assertMarshalAndUnmarshal(t, uint(4294967294), []byte{scalar32UInt32, 0xff, 0xff, 0xff, 0xfe}, uint32(4294967294))
-		assertMarshalAndUnmarshal(t, uint(4294967295), []byte{scalar32UInt32, 0xff, 0xff, 0xff, 0xff}, uint32(4294967295))
+	if cpuHas32bits {
+		assertMarshalAndUnmarshal(t, uint(0), []byte{typeUInt | typeSize32 | effSize8, 0x00}, uint32(0))
+		assertMarshalAndUnmarshal(t, uint(1), []byte{typeUInt | typeSize32 | effSize8, 0x01}, uint32(1))
+		assertMarshalAndUnmarshal(t, uint(4294967294), []byte{typeUInt | typeSize32 | effSize32, 0xff, 0xff, 0xff, 0xfe}, uint32(4294967294))
+		assertMarshalAndUnmarshal(t, uint(4294967295), []byte{typeUInt | typeSize32 | effSize32, 0xff, 0xff, 0xff, 0xff}, uint32(4294967295))
 	} else {
-		assertMarshalAndUnmarshal(t, uint(0), []byte{scalar8UInt64, 0x00}, uint64(0))
-		assertMarshalAndUnmarshal(t, uint(1), []byte{scalar8UInt64, 0x01}, uint64(1))
-		assertMarshalAndUnmarshal(t, uint(18446744073709551614), []byte{scalar64UInt64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, uint64(18446744073709551614))
-		assertMarshalAndUnmarshal(t, uint(18446744073709551615), []byte{scalar64UInt64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, uint64(18446744073709551615))
+		assertMarshalAndUnmarshal(t, uint(0), []byte{typeUInt | typeSize64 | effSize8, 0x00}, uint64(0))
+		assertMarshalAndUnmarshal(t, uint(1), []byte{typeUInt | typeSize64 | effSize8, 0x01}, uint64(1))
+		assertMarshalAndUnmarshal(t, uint(18446744073709551614), []byte{typeUInt | typeSize64 | effSize64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, uint64(18446744073709551614))
+		assertMarshalAndUnmarshal(t, uint(18446744073709551615), []byte{typeUInt | typeSize64 | effSize64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, uint64(18446744073709551615))
 	}
 
-	assertMarshalAndUnmarshal(t, uint8(0), []byte{scalar8UInt8, 0x00}, uint8(0))
-	assertMarshalAndUnmarshal(t, uint8(1), []byte{scalar8UInt8, 0x01}, uint8(1))
-	assertMarshalAndUnmarshal(t, uint8(254), []byte{scalar8UInt8, 0xfe}, uint8(254))
-	assertMarshalAndUnmarshal(t, uint8(255), []byte{scalar8UInt8, 0xff}, uint8(255))
+	assertMarshalAndUnmarshal(t, uint8(0), []byte{typeUInt | typeSize8 | effSize8, 0x00}, uint8(0))
+	assertMarshalAndUnmarshal(t, uint8(1), []byte{typeUInt | typeSize8 | effSize8, 0x01}, uint8(1))
+	assertMarshalAndUnmarshal(t, uint8(254), []byte{typeUInt | typeSize8 | effSize8, 0xfe}, uint8(254))
+	assertMarshalAndUnmarshal(t, uint8(255), []byte{typeUInt | typeSize8 | effSize8, 0xff}, uint8(255))
 
-	assertMarshalAndUnmarshal(t, uint16(0), []byte{scalar8UInt16, 0x00}, uint16(0))
-	assertMarshalAndUnmarshal(t, uint16(1), []byte{scalar8UInt16, 0x01}, uint16(1))
-	assertMarshalAndUnmarshal(t, uint16(65534), []byte{scalar16UInt16, 0xff, 0xfe}, uint16(65534))
-	assertMarshalAndUnmarshal(t, uint16(65535), []byte{scalar16UInt16, 0xff, 0xff}, uint16(65535))
+	assertMarshalAndUnmarshal(t, uint16(0), []byte{typeUInt | typeSize16 | effSize8, 0x00}, uint16(0))
+	assertMarshalAndUnmarshal(t, uint16(1), []byte{typeUInt | typeSize16 | effSize8, 0x01}, uint16(1))
+	assertMarshalAndUnmarshal(t, uint16(65534), []byte{typeUInt | typeSize16 | effSize16, 0xff, 0xfe}, uint16(65534))
+	assertMarshalAndUnmarshal(t, uint16(65535), []byte{typeUInt | typeSize16 | effSize16, 0xff, 0xff}, uint16(65535))
 
-	assertMarshalAndUnmarshal(t, uint32(0), []byte{scalar8UInt32, 0x00}, uint32(0))
-	assertMarshalAndUnmarshal(t, uint32(1), []byte{scalar8UInt32, 0x01}, uint32(1))
-	assertMarshalAndUnmarshal(t, uint32(4294967294), []byte{scalar32UInt32, 0xff, 0xff, 0xff, 0xfe}, uint32(4294967294))
-	assertMarshalAndUnmarshal(t, uint32(4294967295), []byte{scalar32UInt32, 0xff, 0xff, 0xff, 0xff}, uint32(4294967295))
+	assertMarshalAndUnmarshal(t, uint32(0), []byte{typeUInt | typeSize32 | effSize8, 0x00}, uint32(0))
+	assertMarshalAndUnmarshal(t, uint32(1), []byte{typeUInt | typeSize32 | effSize8, 0x01}, uint32(1))
+	assertMarshalAndUnmarshal(t, uint32(4294967294), []byte{typeUInt | typeSize32 | effSize32, 0xff, 0xff, 0xff, 0xfe}, uint32(4294967294))
+	assertMarshalAndUnmarshal(t, uint32(4294967295), []byte{typeUInt | typeSize32 | effSize32, 0xff, 0xff, 0xff, 0xff}, uint32(4294967295))
 
-	assertMarshalAndUnmarshal(t, uint64(0), []byte{scalar8UInt64, 0x00}, uint64(0))
-	assertMarshalAndUnmarshal(t, uint64(1), []byte{scalar8UInt64, 0x01}, uint64(1))
-	assertMarshalAndUnmarshal(t, uint64(18446744073709551614), []byte{scalar64UInt64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, uint64(18446744073709551614))
-	assertMarshalAndUnmarshal(t, uint64(18446744073709551615), []byte{scalar64UInt64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, uint64(18446744073709551615))
+	assertMarshalAndUnmarshal(t, uint64(0), []byte{typeUInt | typeSize64 | effSize8, 0x00}, uint64(0))
+	assertMarshalAndUnmarshal(t, uint64(1), []byte{typeUInt | typeSize64 | effSize8, 0x01}, uint64(1))
+	assertMarshalAndUnmarshal(t, uint64(18446744073709551614), []byte{typeUInt | typeSize64 | effSize64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, uint64(18446744073709551614))
+	assertMarshalAndUnmarshal(t, uint64(18446744073709551615), []byte{typeUInt | typeSize64 | effSize64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, uint64(18446744073709551615))
 }
 
 func TestInt(t *testing.T) {
-	if maxUInt <= maxUInt32 {
-		assertMarshalAndUnmarshal(t, int(-2147483648), []byte{scalar32Int32, 0x80, 0x00, 0x00, 0x00}, int32(-2147483648))
-		assertMarshalAndUnmarshal(t, int(-2147483647), []byte{scalar32Int32, 0x80, 0x00, 0x00, 0x01}, int32(-2147483647))
-		assertMarshalAndUnmarshal(t, int(-2), []byte{scalar32Int32, 0xff, 0xff, 0xff, 0xfe}, int32(-2))
-		assertMarshalAndUnmarshal(t, int(-1), []byte{scalar32Int32, 0xff, 0xff, 0xff, 0xff}, int32(-1))
-		assertMarshalAndUnmarshal(t, int(0), []byte{scalar8Int32, 0x00}, int32(0))
-		assertMarshalAndUnmarshal(t, int(1), []byte{scalar8Int32, 0x01}, int32(1))
-		assertMarshalAndUnmarshal(t, int(2147483646), []byte{scalar32Int32, 0x7f, 0xff, 0xff, 0xfe}, int32(2147483646))
-		assertMarshalAndUnmarshal(t, int(2147483647), []byte{scalar32Int32, 0x7f, 0xff, 0xff, 0xff}, int32(2147483647))
+	if cpuHas32bits {
+		assertMarshalAndUnmarshal(t, int(-2147483648), []byte{typeInt | typeSize32 | effSize32, 0x80, 0x00, 0x00, 0x00}, int32(-2147483648))
+		assertMarshalAndUnmarshal(t, int(-2147483647), []byte{typeInt | typeSize32 | effSize32, 0x80, 0x00, 0x00, 0x01}, int32(-2147483647))
+		assertMarshalAndUnmarshal(t, int(-2), []byte{typeInt | typeSize32 | effSize32, 0xff, 0xff, 0xff, 0xfe}, int32(-2))
+		assertMarshalAndUnmarshal(t, int(-1), []byte{typeInt | typeSize32 | effSize32, 0xff, 0xff, 0xff, 0xff}, int32(-1))
+		assertMarshalAndUnmarshal(t, int(0), []byte{typeInt | typeSize32 | effSize8, 0x00}, int32(0))
+		assertMarshalAndUnmarshal(t, int(1), []byte{typeInt | typeSize32 | effSize8, 0x01}, int32(1))
+		assertMarshalAndUnmarshal(t, int(2147483646), []byte{typeInt | typeSize32 | effSize32, 0x7f, 0xff, 0xff, 0xfe}, int32(2147483646))
+		assertMarshalAndUnmarshal(t, int(2147483647), []byte{typeInt | typeSize32 | effSize32, 0x7f, 0xff, 0xff, 0xff}, int32(2147483647))
 	} else {
-		assertMarshalAndUnmarshal(t, int(-9223372036854775808), []byte{scalar64Int64, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, int64(-9223372036854775808))
-		assertMarshalAndUnmarshal(t, int(-9223372036854775807), []byte{scalar64Int64, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, int64(-9223372036854775807))
-		assertMarshalAndUnmarshal(t, int(-2), []byte{scalar64Int64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, int64(-2))
-		assertMarshalAndUnmarshal(t, int(-1), []byte{scalar64Int64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, int64(-1))
-		assertMarshalAndUnmarshal(t, int(0), []byte{scalar8Int64, 0x00}, int64(0))
-		assertMarshalAndUnmarshal(t, int(1), []byte{scalar8Int64, 0x01}, int64(1))
-		assertMarshalAndUnmarshal(t, int(9223372036854775806), []byte{scalar64Int64, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, int64(9223372036854775806))
-		assertMarshalAndUnmarshal(t, int(9223372036854775807), []byte{scalar64Int64, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, int64(9223372036854775807))
+		assertMarshalAndUnmarshal(t, int(-9223372036854775808), []byte{typeInt | typeSize64 | effSize64, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, int64(-9223372036854775808))
+		assertMarshalAndUnmarshal(t, int(-9223372036854775807), []byte{typeInt | typeSize64 | effSize64, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, int64(-9223372036854775807))
+		assertMarshalAndUnmarshal(t, int(-2), []byte{typeInt | typeSize64 | effSize64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, int64(-2))
+		assertMarshalAndUnmarshal(t, int(-1), []byte{typeInt | typeSize64 | effSize64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, int64(-1))
+		assertMarshalAndUnmarshal(t, int(0), []byte{typeInt | typeSize64 | effSize8, 0x00}, int64(0))
+		assertMarshalAndUnmarshal(t, int(1), []byte{typeInt | typeSize64 | effSize8, 0x01}, int64(1))
+		assertMarshalAndUnmarshal(t, int(9223372036854775806), []byte{typeInt | typeSize64 | effSize64, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, int64(9223372036854775806))
+		assertMarshalAndUnmarshal(t, int(9223372036854775807), []byte{typeInt | typeSize64 | effSize64, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, int64(9223372036854775807))
 	}
 
-	assertMarshalAndUnmarshal(t, int8(-128), []byte{scalar8Int8, 0x80}, int8(-128))
-	assertMarshalAndUnmarshal(t, int8(-127), []byte{scalar8Int8, 0x81}, int8(-127))
-	assertMarshalAndUnmarshal(t, int8(-2), []byte{scalar8Int8, 0xfe}, int8(-2))
-	assertMarshalAndUnmarshal(t, int8(-1), []byte{scalar8Int8, 0xff}, int8(-1))
-	assertMarshalAndUnmarshal(t, int8(0), []byte{scalar8Int8, 0x00}, int8(0))
-	assertMarshalAndUnmarshal(t, int8(1), []byte{scalar8Int8, 0x01}, int8(1))
-	assertMarshalAndUnmarshal(t, int8(126), []byte{scalar8Int8, 0x7e}, int8(126))
-	assertMarshalAndUnmarshal(t, int8(127), []byte{scalar8Int8, 0x7f}, int8(127))
+	assertMarshalAndUnmarshal(t, int8(-128), []byte{typeInt | typeSize8 | effSize8, 0x80}, int8(-128))
+	assertMarshalAndUnmarshal(t, int8(-127), []byte{typeInt | typeSize8 | effSize8, 0x81}, int8(-127))
+	assertMarshalAndUnmarshal(t, int8(-2), []byte{typeInt | typeSize8 | effSize8, 0xfe}, int8(-2))
+	assertMarshalAndUnmarshal(t, int8(-1), []byte{typeInt | typeSize8 | effSize8, 0xff}, int8(-1))
+	assertMarshalAndUnmarshal(t, int8(0), []byte{typeInt | typeSize8 | effSize8, 0x00}, int8(0))
+	assertMarshalAndUnmarshal(t, int8(1), []byte{typeInt | typeSize8 | effSize8, 0x01}, int8(1))
+	assertMarshalAndUnmarshal(t, int8(126), []byte{typeInt | typeSize8 | effSize8, 0x7e}, int8(126))
+	assertMarshalAndUnmarshal(t, int8(127), []byte{typeInt | typeSize8 | effSize8, 0x7f}, int8(127))
 
-	assertMarshalAndUnmarshal(t, int16(-32768), []byte{scalar16Int16, 0x80, 0x00}, int16(-32768))
-	assertMarshalAndUnmarshal(t, int16(-32767), []byte{scalar16Int16, 0x80, 0x01}, int16(-32767))
-	assertMarshalAndUnmarshal(t, int16(-2), []byte{scalar16Int16, 0xff, 0xfe}, int16(-2))
-	assertMarshalAndUnmarshal(t, int16(-1), []byte{scalar16Int16, 0xff, 0xff}, int16(-1))
-	assertMarshalAndUnmarshal(t, int16(0), []byte{scalar8Int16, 0x00}, int16(0))
-	assertMarshalAndUnmarshal(t, int16(1), []byte{scalar8Int16, 0x01}, int16(1))
-	assertMarshalAndUnmarshal(t, int16(32766), []byte{scalar16Int16, 0x7f, 0xfe}, int16(32766))
-	assertMarshalAndUnmarshal(t, int16(32767), []byte{scalar16Int16, 0x7f, 0xff}, int16(32767))
+	assertMarshalAndUnmarshal(t, int16(-32768), []byte{typeInt | typeSize16 | effSize16, 0x80, 0x00}, int16(-32768))
+	assertMarshalAndUnmarshal(t, int16(-32767), []byte{typeInt | typeSize16 | effSize16, 0x80, 0x01}, int16(-32767))
+	assertMarshalAndUnmarshal(t, int16(-2), []byte{typeInt | typeSize16 | effSize16, 0xff, 0xfe}, int16(-2))
+	assertMarshalAndUnmarshal(t, int16(-1), []byte{typeInt | typeSize16 | effSize16, 0xff, 0xff}, int16(-1))
+	assertMarshalAndUnmarshal(t, int16(0), []byte{typeInt | typeSize16 | effSize8, 0x00}, int16(0))
+	assertMarshalAndUnmarshal(t, int16(1), []byte{typeInt | typeSize16 | effSize8, 0x01}, int16(1))
+	assertMarshalAndUnmarshal(t, int16(32766), []byte{typeInt | typeSize16 | effSize16, 0x7f, 0xfe}, int16(32766))
+	assertMarshalAndUnmarshal(t, int16(32767), []byte{typeInt | typeSize16 | effSize16, 0x7f, 0xff}, int16(32767))
 
-	assertMarshalAndUnmarshal(t, int32(-2147483648), []byte{scalar32Int32, 0x80, 0x00, 0x00, 0x00}, int32(-2147483648))
-	assertMarshalAndUnmarshal(t, int32(-2147483647), []byte{scalar32Int32, 0x80, 0x00, 0x00, 0x01}, int32(-2147483647))
-	assertMarshalAndUnmarshal(t, int32(-2), []byte{scalar32Int32, 0xff, 0xff, 0xff, 0xfe}, int32(-2))
-	assertMarshalAndUnmarshal(t, int32(-1), []byte{scalar32Int32, 0xff, 0xff, 0xff, 0xff}, int32(-1))
-	assertMarshalAndUnmarshal(t, int32(0), []byte{scalar8Int32, 0x00}, int32(0))
-	assertMarshalAndUnmarshal(t, int32(1), []byte{scalar8Int32, 0x01}, int32(1))
-	assertMarshalAndUnmarshal(t, int32(2147483646), []byte{scalar32Int32, 0x7f, 0xff, 0xff, 0xfe}, int32(2147483646))
-	assertMarshalAndUnmarshal(t, int32(2147483647), []byte{scalar32Int32, 0x7f, 0xff, 0xff, 0xff}, int32(2147483647))
+	assertMarshalAndUnmarshal(t, int32(-2147483648), []byte{typeInt | typeSize32 | effSize32, 0x80, 0x00, 0x00, 0x00}, int32(-2147483648))
+	assertMarshalAndUnmarshal(t, int32(-2147483647), []byte{typeInt | typeSize32 | effSize32, 0x80, 0x00, 0x00, 0x01}, int32(-2147483647))
+	assertMarshalAndUnmarshal(t, int32(-2), []byte{typeInt | typeSize32 | effSize32, 0xff, 0xff, 0xff, 0xfe}, int32(-2))
+	assertMarshalAndUnmarshal(t, int32(-1), []byte{typeInt | typeSize32 | effSize32, 0xff, 0xff, 0xff, 0xff}, int32(-1))
+	assertMarshalAndUnmarshal(t, int32(0), []byte{typeInt | typeSize32 | effSize8, 0x00}, int32(0))
+	assertMarshalAndUnmarshal(t, int32(1), []byte{typeInt | typeSize32 | effSize8, 0x01}, int32(1))
+	assertMarshalAndUnmarshal(t, int32(2147483646), []byte{typeInt | typeSize32 | effSize32, 0x7f, 0xff, 0xff, 0xfe}, int32(2147483646))
+	assertMarshalAndUnmarshal(t, int32(2147483647), []byte{typeInt | typeSize32 | effSize32, 0x7f, 0xff, 0xff, 0xff}, int32(2147483647))
 
-	assertMarshalAndUnmarshal(t, int64(-9223372036854775808), []byte{scalar64Int64, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, int64(-9223372036854775808))
-	assertMarshalAndUnmarshal(t, int64(-9223372036854775807), []byte{scalar64Int64, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, int64(-9223372036854775807))
-	assertMarshalAndUnmarshal(t, int64(-2), []byte{scalar64Int64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, int64(-2))
-	assertMarshalAndUnmarshal(t, int64(-1), []byte{scalar64Int64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, int64(-1))
-	assertMarshalAndUnmarshal(t, int64(0), []byte{scalar8Int64, 0x00}, int64(0))
-	assertMarshalAndUnmarshal(t, int64(1), []byte{scalar8Int64, 0x01}, int64(1))
-	assertMarshalAndUnmarshal(t, int64(9223372036854775806), []byte{scalar64Int64, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, int64(9223372036854775806))
-	assertMarshalAndUnmarshal(t, int64(9223372036854775807), []byte{scalar64Int64, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, int64(9223372036854775807))
+	assertMarshalAndUnmarshal(t, int64(-9223372036854775808), []byte{typeInt | typeSize64 | effSize64, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, int64(-9223372036854775808))
+	assertMarshalAndUnmarshal(t, int64(-9223372036854775807), []byte{typeInt | typeSize64 | effSize64, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, int64(-9223372036854775807))
+	assertMarshalAndUnmarshal(t, int64(-2), []byte{typeInt | typeSize64 | effSize64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, int64(-2))
+	assertMarshalAndUnmarshal(t, int64(-1), []byte{typeInt | typeSize64 | effSize64, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, int64(-1))
+	assertMarshalAndUnmarshal(t, int64(0), []byte{typeInt | typeSize64 | effSize8, 0x00}, int64(0))
+	assertMarshalAndUnmarshal(t, int64(1), []byte{typeInt | typeSize64 | effSize8, 0x01}, int64(1))
+	assertMarshalAndUnmarshal(t, int64(9223372036854775806), []byte{typeInt | typeSize64 | effSize64, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe}, int64(9223372036854775806))
+	assertMarshalAndUnmarshal(t, int64(9223372036854775807), []byte{typeInt | typeSize64 | effSize64, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, int64(9223372036854775807))
 }
 
 func TestFloat(t *testing.T) {
-	assertMarshalAndUnmarshal(t, float32(-math.MaxFloat32), []byte{scalar32Float32, 0xff, 0x7f, 0xff, 0xff}, float32(-math.MaxFloat32))
-	assertMarshalAndUnmarshal(t, float32(-math.MaxFloat32/2), []byte{scalar32Float32, 0xfe, 0xff, 0xff, 0xff}, float32(-math.MaxFloat32/2))
-	assertMarshalAndUnmarshal(t, float32(-1), []byte{scalar16Float32, 0xbf, 0x80}, float32(-1))
-	assertMarshalAndUnmarshal(t, float32(0), []byte{scalar8Float32, 0x00}, float32(0))
-	assertMarshalAndUnmarshal(t, float32(1), []byte{scalar16Float32, 0x3f, 0x80}, float32(1))
-	assertMarshalAndUnmarshal(t, float32(math.MaxFloat32/2), []byte{scalar32Float32, 0x7e, 0xff, 0xff, 0xff}, float32(math.MaxFloat32/2))
-	assertMarshalAndUnmarshal(t, float32(math.MaxFloat32), []byte{scalar32Float32, 0x7f, 0x7f, 0xff, 0xff}, float32(math.MaxFloat32))
+	assertMarshalAndUnmarshal(t, float32(-math.MaxFloat32), []byte{typeFloat | typeSize32 | effSize32, 0xff, 0x7f, 0xff, 0xff}, float32(-math.MaxFloat32))
+	assertMarshalAndUnmarshal(t, float32(-math.MaxFloat32/2), []byte{typeFloat | typeSize32 | effSize32, 0xfe, 0xff, 0xff, 0xff}, float32(-math.MaxFloat32/2))
+	assertMarshalAndUnmarshal(t, float32(-1), []byte{typeFloat | typeSize32 | effSize16, 0xbf, 0x80}, float32(-1))
+	assertMarshalAndUnmarshal(t, float32(0), []byte{typeFloat | typeSize32 | effSize8, 0x00}, float32(0))
+	assertMarshalAndUnmarshal(t, float32(1), []byte{typeFloat | typeSize32 | effSize16, 0x3f, 0x80}, float32(1))
+	assertMarshalAndUnmarshal(t, float32(math.MaxFloat32/2), []byte{typeFloat | typeSize32 | effSize32, 0x7e, 0xff, 0xff, 0xff}, float32(math.MaxFloat32/2))
+	assertMarshalAndUnmarshal(t, float32(math.MaxFloat32), []byte{typeFloat | typeSize32 | effSize32, 0x7f, 0x7f, 0xff, 0xff}, float32(math.MaxFloat32))
 
-	assertMarshalAndUnmarshal(t, float64(-math.MaxFloat64), []byte{scalar64Float64, 0xff, 0xef, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, float64(-math.MaxFloat64))
-	assertMarshalAndUnmarshal(t, float64(-math.MaxFloat64/2), []byte{scalar64Float64, 0xff, 0xdf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, float64(-math.MaxFloat64/2))
-	assertMarshalAndUnmarshal(t, float64(-1), []byte{scalar16Float64, 0xbf, 0xf0}, float64(-1))
-	assertMarshalAndUnmarshal(t, float64(0), []byte{scalar8Float64, 0x00}, float64(0))
-	assertMarshalAndUnmarshal(t, float64(1), []byte{scalar16Float64, 0x3f, 0xf0}, float64(1))
-	assertMarshalAndUnmarshal(t, float64(math.MaxFloat64/2), []byte{scalar64Float64, 0x7f, 0xdf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, float64(math.MaxFloat64/2))
-	assertMarshalAndUnmarshal(t, float64(math.MaxFloat64), []byte{scalar64Float64, 0x7f, 0xef, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, float64(math.MaxFloat64))
+	assertMarshalAndUnmarshal(t, float64(-math.MaxFloat64), []byte{typeFloat | typeSize64 | effSize64, 0xff, 0xef, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, float64(-math.MaxFloat64))
+	assertMarshalAndUnmarshal(t, float64(-math.MaxFloat64/2), []byte{typeFloat | typeSize64 | effSize64, 0xff, 0xdf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, float64(-math.MaxFloat64/2))
+	assertMarshalAndUnmarshal(t, float64(-1), []byte{typeFloat | typeSize64 | effSize16, 0xbf, 0xf0}, float64(-1))
+	assertMarshalAndUnmarshal(t, float64(0), []byte{typeFloat | typeSize64 | effSize8, 0x00}, float64(0))
+	assertMarshalAndUnmarshal(t, float64(1), []byte{typeFloat | typeSize64 | effSize16, 0x3f, 0xf0}, float64(1))
+	assertMarshalAndUnmarshal(t, float64(math.MaxFloat64/2), []byte{typeFloat | typeSize64 | effSize64, 0x7f, 0xdf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, float64(math.MaxFloat64/2))
+	assertMarshalAndUnmarshal(t, float64(math.MaxFloat64), []byte{typeFloat | typeSize64 | effSize64, 0x7f, 0xef, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, float64(math.MaxFloat64))
 }
 
 func TestString(t *testing.T) {
-	assertMarshalAndUnmarshal(t, "", []byte{string8, 0x00}, "")
-	assertMarshalAndUnmarshal(t, []byte{}, []byte{string8, 0x00}, "")
-	assertMarshalAndUnmarshal(t, "x", []byte{string8, 0x01, 'x'}, "x")
-	assertMarshalAndUnmarshal(t, []byte{'x'}, []byte{string8, 0x01, 'x'}, "x")
+	assertMarshalAndUnmarshal(t, "", []byte{typeString | effSize8, 0x00}, "")
+	assertMarshalAndUnmarshal(t, []byte{}, []byte{typeString | effSize8, 0x00}, "")
+	assertMarshalAndUnmarshal(t, "x", []byte{typeString | effSize8, 0x01, 'x'}, "x")
+	assertMarshalAndUnmarshal(t, []byte{'x'}, []byte{typeString | effSize8, 0x01, 'x'}, "x")
 
 	{
-		buf := [256]byte{string8, 0xfe}
+		buf := [256]byte{typeString | effSize8, 0xfe}
 		rand.Read(buf[2:])
 
 		s := string(buf[2:])
@@ -206,7 +206,7 @@ func TestString(t *testing.T) {
 	}
 
 	{
-		buf := [257]byte{string8, 0xff}
+		buf := [257]byte{typeString | effSize8, 0xff}
 		rand.Read(buf[2:])
 
 		s := string(buf[2:])
@@ -215,7 +215,7 @@ func TestString(t *testing.T) {
 	}
 
 	{
-		buf := [259]byte{string16, 0x01, 0x00}
+		buf := [259]byte{typeString | effSize16, 0x01, 0x00}
 		rand.Read(buf[3:])
 
 		s := string(buf[3:])
@@ -224,7 +224,7 @@ func TestString(t *testing.T) {
 	}
 
 	{
-		buf := [260]byte{string16, 0x01, 0x01}
+		buf := [260]byte{typeString | effSize16, 0x01, 0x01}
 		rand.Read(buf[3:])
 
 		s := string(buf[3:])
@@ -233,7 +233,7 @@ func TestString(t *testing.T) {
 	}
 
 	{
-		buf := [65537]byte{string16, 0xff, 0xfe}
+		buf := [65537]byte{typeString | effSize16, 0xff, 0xfe}
 		rand.Read(buf[3:])
 
 		s := string(buf[3:])
@@ -242,7 +242,7 @@ func TestString(t *testing.T) {
 	}
 
 	{
-		buf := [65538]byte{string16, 0xff, 0xff}
+		buf := [65538]byte{typeString | effSize16, 0xff, 0xff}
 		rand.Read(buf[3:])
 
 		s := string(buf[3:])
@@ -251,7 +251,7 @@ func TestString(t *testing.T) {
 	}
 
 	{
-		buf := [65540]byte{string24, 0x01, 0x00, 0x00}
+		buf := [65540]byte{typeString | effSize24, 0x01, 0x00, 0x00}
 		rand.Read(buf[4:])
 
 		s := string(buf[4:])
@@ -260,7 +260,7 @@ func TestString(t *testing.T) {
 	}
 
 	{
-		buf := [65541]byte{string24, 0x01, 0x00, 0x01}
+		buf := [65541]byte{typeString | effSize24, 0x01, 0x00, 0x01}
 		rand.Read(buf[4:])
 
 		s := string(buf[4:])
@@ -270,28 +270,28 @@ func TestString(t *testing.T) {
 }
 
 func TestArray(t *testing.T) {
-	assertMarshalAndUnmarshal(t, []any{}, []byte{array8, 0x00}, []any{})
-	assertMarshalAndUnmarshal(t, []any{nil}, []byte{array8, 0x01, scalarNil}, []any{nil})
-	assertMarshalAndUnmarshal(t, []any{false}, []byte{array8, 0x01, scalarFalse}, []any{false})
-	assertMarshalAndUnmarshal(t, []any{true}, []byte{array8, 0x01, scalarTrue}, []any{true})
-	assertMarshalAndUnmarshal(t, []any{uint16(1)}, []byte{array8, 0x01, scalar8UInt16, 0x01}, []any{uint16(1)})
-	assertMarshalAndUnmarshal(t, []any{int32(2)}, []byte{array8, 0x01, scalar8Int32, 0x02}, []any{int32(2)})
-	assertMarshalAndUnmarshal(t, []any{float64(3)}, []byte{array8, 0x01, scalar16Float64, 0x40, 0x08}, []any{float64(3)})
-	assertMarshalAndUnmarshal(t, []any{"x"}, []byte{array8, 0x01, string8, 0x01, 'x'}, []any{"x"})
-	assertMarshalAndUnmarshal(t, []any{[]any{}}, []byte{array8, 0x01, array8, 0x00}, []any{[]any{}})
-	assertMarshalAndUnmarshal(t, []any{map[string]any{}}, []byte{array8, 0x01, dict8, 0x00}, []any{map[string]any{}})
+	assertMarshalAndUnmarshal(t, []any{}, []byte{typeArray | effSize8, 0x00}, []any{})
+	assertMarshalAndUnmarshal(t, []any{nil}, []byte{typeArray | effSize8, 0x01, scalarNil}, []any{nil})
+	assertMarshalAndUnmarshal(t, []any{false}, []byte{typeArray | effSize8, 0x01, scalarFalse}, []any{false})
+	assertMarshalAndUnmarshal(t, []any{true}, []byte{typeArray | effSize8, 0x01, scalarTrue}, []any{true})
+	assertMarshalAndUnmarshal(t, []any{uint16(1)}, []byte{typeArray | effSize8, 0x01, typeUInt | typeSize16 | effSize8, 0x01}, []any{uint16(1)})
+	assertMarshalAndUnmarshal(t, []any{int32(2)}, []byte{typeArray | effSize8, 0x01, typeInt | typeSize32 | effSize8, 0x02}, []any{int32(2)})
+	assertMarshalAndUnmarshal(t, []any{float64(3)}, []byte{typeArray | effSize8, 0x01, typeFloat | typeSize64 | effSize16, 0x40, 0x08}, []any{float64(3)})
+	assertMarshalAndUnmarshal(t, []any{"x"}, []byte{typeArray | effSize8, 0x01, typeString | effSize8, 0x01, 'x'}, []any{"x"})
+	assertMarshalAndUnmarshal(t, []any{[]any{}}, []byte{typeArray | effSize8, 0x01, typeArray | effSize8, 0x00}, []any{[]any{}})
+	assertMarshalAndUnmarshal(t, []any{map[string]any{}}, []byte{typeArray | effSize8, 0x01, typeDict | effSize8, 0x00}, []any{map[string]any{}})
 
 	assertMarshalAndUnmarshal(
 		t,
 		[]any{map[string]any{}, []any{}, "x", float64(3), int32(2), uint16(1), true, false, nil},
 		[]byte{
-			array8, 0x09,
-			dict8, 0x00,
-			array8, 0x00,
-			string8, 0x01, 'x',
-			scalar16Float64, 0x40, 0x08,
-			scalar8Int32, 0x02,
-			scalar8UInt16, 0x01,
+			typeArray | effSize8, 0x09,
+			typeDict | effSize8, 0x00,
+			typeArray | effSize8, 0x00,
+			typeString | effSize8, 0x01, 'x',
+			typeFloat | typeSize64 | effSize16, 0x40, 0x08,
+			typeInt | typeSize32 | effSize8, 0x02,
+			typeUInt | typeSize16 | effSize8, 0x01,
 			scalarTrue,
 			scalarFalse,
 			scalarNil,
@@ -301,16 +301,16 @@ func TestArray(t *testing.T) {
 }
 
 func TestDict(t *testing.T) {
-	assertMarshalAndUnmarshal(t, map[string]any{}, []byte{dict8, 0x00}, map[string]any{})
-	assertMarshalAndUnmarshal(t, map[string]any{"nil": nil}, []byte{dict8, 0x01, string8, 0x03, 'n', 'i', 'l', scalarNil}, map[string]any{"nil": nil})
-	assertMarshalAndUnmarshal(t, map[string]any{"false": false}, []byte{dict8, 0x01, string8, 0x05, 'f', 'a', 'l', 's', 'e', scalarFalse}, map[string]any{"false": false})
-	assertMarshalAndUnmarshal(t, map[string]any{"true": true}, []byte{dict8, 0x01, string8, 0x04, 't', 'r', 'u', 'e', scalarTrue}, map[string]any{"true": true})
-	assertMarshalAndUnmarshal(t, map[string]any{"uint16(1)": uint16(1)}, []byte{dict8, 0x01, string8, 0x09, 'u', 'i', 'n', 't', '1', '6', '(', '1', ')', scalar8UInt16, 0x01}, map[string]any{"uint16(1)": uint16(1)})
-	assertMarshalAndUnmarshal(t, map[string]any{"int32(2)": int32(2)}, []byte{dict8, 0x01, string8, 0x08, 'i', 'n', 't', '3', '2', '(', '2', ')', scalar8Int32, 0x02}, map[string]any{"int32(2)": int32(2)})
-	assertMarshalAndUnmarshal(t, map[string]any{"float64(3)": float64(3)}, []byte{dict8, 0x01, string8, 0x0a, 'f', 'l', 'o', 'a', 't', '6', '4', '(', '3', ')', scalar16Float64, 0x40, 0x08}, map[string]any{"float64(3)": float64(3)})
-	assertMarshalAndUnmarshal(t, map[string]any{`"x"`: "x"}, []byte{dict8, 0x01, string8, 0x03, '"', 'x', '"', string8, 0x01, 'x'}, map[string]any{`"x"`: "x"})
-	assertMarshalAndUnmarshal(t, map[string]any{"[]any{}": []any{}}, []byte{dict8, 0x01, string8, 0x07, '[', ']', 'a', 'n', 'y', '{', '}', array8, 0x00}, map[string]any{"[]any{}": []any{}})
-	assertMarshalAndUnmarshal(t, map[string]any{"map[string]any{}": map[string]any{}}, []byte{dict8, 0x01, string8, 0x10, 'm', 'a', 'p', '[', 's', 't', 'r', 'i', 'n', 'g', ']', 'a', 'n', 'y', '{', '}', dict8, 0x00}, map[string]any{"map[string]any{}": map[string]any{}})
+	assertMarshalAndUnmarshal(t, map[string]any{}, []byte{typeDict | effSize8, 0x00}, map[string]any{})
+	assertMarshalAndUnmarshal(t, map[string]any{"nil": nil}, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x03, 'n', 'i', 'l', scalarNil}, map[string]any{"nil": nil})
+	assertMarshalAndUnmarshal(t, map[string]any{"false": false}, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x05, 'f', 'a', 'l', 's', 'e', scalarFalse}, map[string]any{"false": false})
+	assertMarshalAndUnmarshal(t, map[string]any{"true": true}, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x04, 't', 'r', 'u', 'e', scalarTrue}, map[string]any{"true": true})
+	assertMarshalAndUnmarshal(t, map[string]any{"uint16(1)": uint16(1)}, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x09, 'u', 'i', 'n', 't', '1', '6', '(', '1', ')', typeUInt | typeSize16 | effSize8, 0x01}, map[string]any{"uint16(1)": uint16(1)})
+	assertMarshalAndUnmarshal(t, map[string]any{"int32(2)": int32(2)}, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x08, 'i', 'n', 't', '3', '2', '(', '2', ')', typeInt | typeSize32 | effSize8, 0x02}, map[string]any{"int32(2)": int32(2)})
+	assertMarshalAndUnmarshal(t, map[string]any{"float64(3)": float64(3)}, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x0a, 'f', 'l', 'o', 'a', 't', '6', '4', '(', '3', ')', typeFloat | typeSize64 | effSize16, 0x40, 0x08}, map[string]any{"float64(3)": float64(3)})
+	assertMarshalAndUnmarshal(t, map[string]any{`"x"`: "x"}, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x03, '"', 'x', '"', typeString | effSize8, 0x01, 'x'}, map[string]any{`"x"`: "x"})
+	assertMarshalAndUnmarshal(t, map[string]any{"[]any{}": []any{}}, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x07, '[', ']', 'a', 'n', 'y', '{', '}', typeArray | effSize8, 0x00}, map[string]any{"[]any{}": []any{}})
+	assertMarshalAndUnmarshal(t, map[string]any{"map[string]any{}": map[string]any{}}, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x10, 'm', 'a', 'p', '[', 's', 't', 'r', 'i', 'n', 'g', ']', 'a', 'n', 'y', '{', '}', typeDict | effSize8, 0x00}, map[string]any{"map[string]any{}": map[string]any{}})
 
 	assertMarshalAndUnmarshal(
 		t,
@@ -326,16 +326,16 @@ func TestDict(t *testing.T) {
 			"nil":              nil,
 		},
 		[]byte{
-			dict8, 0x09,
-			string8, 0x03, '"', 'x', '"', string8, 0x01, 'x',
-			string8, 0x07, '[', ']', 'a', 'n', 'y', '{', '}', array8, 0x00,
-			string8, 0x05, 'f', 'a', 'l', 's', 'e', scalarFalse,
-			string8, 0x0a, 'f', 'l', 'o', 'a', 't', '6', '4', '(', '3', ')', scalar16Float64, 0x40, 0x08,
-			string8, 0x08, 'i', 'n', 't', '3', '2', '(', '2', ')', scalar8Int32, 0x02,
-			string8, 0x10, 'm', 'a', 'p', '[', 's', 't', 'r', 'i', 'n', 'g', ']', 'a', 'n', 'y', '{', '}', dict8, 0x00,
-			string8, 0x03, 'n', 'i', 'l', scalarNil,
-			string8, 0x04, 't', 'r', 'u', 'e', scalarTrue,
-			string8, 0x09, 'u', 'i', 'n', 't', '1', '6', '(', '1', ')', scalar8UInt16, 0x01,
+			typeDict | effSize8, 0x09,
+			typeString | effSize8, 0x03, '"', 'x', '"', typeString | effSize8, 0x01, 'x',
+			typeString | effSize8, 0x07, '[', ']', 'a', 'n', 'y', '{', '}', typeArray | effSize8, 0x00,
+			typeString | effSize8, 0x05, 'f', 'a', 'l', 's', 'e', scalarFalse,
+			typeString | effSize8, 0x0a, 'f', 'l', 'o', 'a', 't', '6', '4', '(', '3', ')', typeFloat | typeSize64 | effSize16, 0x40, 0x08,
+			typeString | effSize8, 0x08, 'i', 'n', 't', '3', '2', '(', '2', ')', typeInt | typeSize32 | effSize8, 0x02,
+			typeString | effSize8, 0x10, 'm', 'a', 'p', '[', 's', 't', 'r', 'i', 'n', 'g', ']', 'a', 'n', 'y', '{', '}', typeDict | effSize8, 0x00,
+			typeString | effSize8, 0x03, 'n', 'i', 'l', scalarNil,
+			typeString | effSize8, 0x04, 't', 'r', 'u', 'e', scalarTrue,
+			typeString | effSize8, 0x09, 'u', 'i', 'n', 't', '1', '6', '(', '1', ')', typeUInt | typeSize16 | effSize8, 0x01,
 		},
 		map[string]any{
 			"map[string]any{}": map[string]any{},
@@ -352,11 +352,11 @@ func TestDict(t *testing.T) {
 }
 
 func TestSpecial(t *testing.T) {
-	assertMarshalAndUnmarshal(t, cat{"has mouse"}, []byte{string8, 0x09, 'h', 'a', 's', ' ', 'm', 'o', 'u', 's', 'e'}, "has mouse")
-	assertMarshalAndUnmarshal(t, lolcat{true}, []byte{string8, 0x12, 'I', ' ', 'h', 'a', 's', ' ', 'c', 'h', 'e', 'e', 'z', 'b', 'u', 'r', 'g', 'e', 'r', '!'}, "I has cheezburger!")
-	assertMarshalAndUnmarshal(t, grumpycat{`-.-"`}, []byte{dict8, 0x01, string8, 0x04, 'm', 'o', 't', 'd', string8, 0x04, '-', '.', '-', '"'}, map[string]any{"motd": `-.-"`})
+	assertMarshalAndUnmarshal(t, cat{"has mouse"}, []byte{typeString | effSize8, 0x09, 'h', 'a', 's', ' ', 'm', 'o', 'u', 's', 'e'}, "has mouse")
+	assertMarshalAndUnmarshal(t, lolcat{true}, []byte{typeString | effSize8, 0x12, 'I', ' ', 'h', 'a', 's', ' ', 'c', 'h', 'e', 'e', 'z', 'b', 'u', 'r', 'g', 'e', 'r', '!'}, "I has cheezburger!")
+	assertMarshalAndUnmarshal(t, grumpycat{`-.-"`}, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x04, 'm', 'o', 't', 'd', typeString | effSize8, 0x04, '-', '.', '-', '"'}, map[string]any{"motd": `-.-"`})
 
-	assertUnmarshal(t, []byte{dict8, 0x01, scalarNil, scalarNil}, map[string]any{string([]byte{0x00}): nil})
+	assertUnmarshal(t, []byte{typeDict | effSize8, 0x01, scalarNil, scalarNil}, map[string]any{string([]byte{0x00}): nil})
 }
 
 func TestError(t *testing.T) {
@@ -403,49 +403,49 @@ func TestError(t *testing.T) {
 
 	assertUnmarshalFromIncomplete(t, []byte{})
 
-	assertUnmarshalFromIncomplete(t, []byte{scalar8UInt8})
-	assertUnmarshalFromIncomplete(t, []byte{scalar16UInt16})
-	assertUnmarshalFromIncomplete(t, []byte{scalar32UInt32})
-	assertUnmarshalFromIncomplete(t, []byte{scalar64UInt64})
+	assertUnmarshalFromIncomplete(t, []byte{typeUInt | typeSize8 | effSize8})
+	assertUnmarshalFromIncomplete(t, []byte{typeUInt | typeSize16 | effSize16})
+	assertUnmarshalFromIncomplete(t, []byte{typeUInt | typeSize32 | effSize32})
+	assertUnmarshalFromIncomplete(t, []byte{typeUInt | typeSize64 | effSize64})
 
-	assertUnmarshalFromIncomplete(t, []byte{scalar8Int8})
-	assertUnmarshalFromIncomplete(t, []byte{scalar16Int16})
-	assertUnmarshalFromIncomplete(t, []byte{scalar32Int32})
-	assertUnmarshalFromIncomplete(t, []byte{scalar64Int64})
+	assertUnmarshalFromIncomplete(t, []byte{typeInt | typeSize8 | effSize8})
+	assertUnmarshalFromIncomplete(t, []byte{typeInt | typeSize16 | effSize16})
+	assertUnmarshalFromIncomplete(t, []byte{typeInt | typeSize32 | effSize32})
+	assertUnmarshalFromIncomplete(t, []byte{typeInt | typeSize64 | effSize64})
 
-	assertUnmarshalFromIncomplete(t, []byte{scalar32Float32})
-	assertUnmarshalFromIncomplete(t, []byte{scalar64Float64})
+	assertUnmarshalFromIncomplete(t, []byte{typeFloat | typeSize32 | effSize32})
+	assertUnmarshalFromIncomplete(t, []byte{typeFloat | typeSize64 | effSize64})
 
-	assertUnmarshalFromIncomplete(t, []byte{string8})
-	assertUnmarshalFromIncomplete(t, []byte{string16})
-	assertUnmarshalFromIncomplete(t, []byte{string32})
-	assertUnmarshalFromIncomplete(t, []byte{string64})
-	assertUnmarshalFromIncomplete(t, []byte{string8, 0x01})
-	assertUnmarshalFromIncomplete(t, []byte{string16, 0x00, 0x01})
-	assertUnmarshalFromIncomplete(t, []byte{string32, 0x00, 0x00, 0x00, 0x01})
-	assertUnmarshalFromIncomplete(t, []byte{string64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeString | effSize8})
+	assertUnmarshalFromIncomplete(t, []byte{typeString | effSize16})
+	assertUnmarshalFromIncomplete(t, []byte{typeString | effSize32})
+	assertUnmarshalFromIncomplete(t, []byte{typeString | effSize64})
+	assertUnmarshalFromIncomplete(t, []byte{typeString | effSize8, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeString | effSize16, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeString | effSize32, 0x00, 0x00, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeString | effSize64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01})
 
-	assertUnmarshalFromIncomplete(t, []byte{array8})
-	assertUnmarshalFromIncomplete(t, []byte{array16})
-	assertUnmarshalFromIncomplete(t, []byte{array32})
-	assertUnmarshalFromIncomplete(t, []byte{array64})
-	assertUnmarshalFromIncomplete(t, []byte{array8, 0x01})
-	assertUnmarshalFromIncomplete(t, []byte{array16, 0x00, 0x01})
-	assertUnmarshalFromIncomplete(t, []byte{array32, 0x00, 0x00, 0x00, 0x01})
-	assertUnmarshalFromIncomplete(t, []byte{array64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeArray | effSize8})
+	assertUnmarshalFromIncomplete(t, []byte{typeArray | effSize16})
+	assertUnmarshalFromIncomplete(t, []byte{typeArray | effSize32})
+	assertUnmarshalFromIncomplete(t, []byte{typeArray | effSize64})
+	assertUnmarshalFromIncomplete(t, []byte{typeArray | effSize8, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeArray | effSize16, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeArray | effSize32, 0x00, 0x00, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeArray | effSize64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01})
 
-	assertUnmarshalFromIncomplete(t, []byte{dict8})
-	assertUnmarshalFromIncomplete(t, []byte{dict16})
-	assertUnmarshalFromIncomplete(t, []byte{dict32})
-	assertUnmarshalFromIncomplete(t, []byte{dict64})
-	assertUnmarshalFromIncomplete(t, []byte{dict8, 0x01})
-	assertUnmarshalFromIncomplete(t, []byte{dict16, 0x00, 0x01})
-	assertUnmarshalFromIncomplete(t, []byte{dict32, 0x00, 0x00, 0x00, 0x01})
-	assertUnmarshalFromIncomplete(t, []byte{dict64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01})
-	assertUnmarshalFromIncomplete(t, []byte{dict8, 0x01, string8, 0x00})
-	assertUnmarshalFromIncomplete(t, []byte{dict16, 0x00, 0x01, string8, 0x00})
-	assertUnmarshalFromIncomplete(t, []byte{dict32, 0x00, 0x00, 0x00, 0x01, string8, 0x00})
-	assertUnmarshalFromIncomplete(t, []byte{dict64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, string8, 0x00})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize8})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize16})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize32})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize64})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize8, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize16, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize32, 0x00, 0x00, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize8, 0x01, typeString | effSize8, 0x00})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize16, 0x00, 0x01, typeString | effSize8, 0x00})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize32, 0x00, 0x00, 0x00, 0x01, typeString | effSize8, 0x00})
+	assertUnmarshalFromIncomplete(t, []byte{typeDict | effSize64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, typeString | effSize8, 0x00})
 
 	assertUnmarshalNotUnmarshalable(t, typeNil|1)
 	assertUnmarshalNotUnmarshalable(t, typeBool|2)
